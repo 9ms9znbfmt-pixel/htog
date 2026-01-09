@@ -9,35 +9,59 @@
 <body>
   <script>
     (function () {
+      if (window.innerWidth > 720) return;
+
+      const header = document.querySelector(".header");
+      if (!header) return;
+
+     let lastY = window.scrollY;
+     let ticking = false;
+
+     function onScroll() {
+        const currentY = window.scrollY;
+
+        if (currentY > lastY && currentY > 80) {
+        // 아래로 스크롤 + 어느 정도 내려갔을 때 숨김
+          header.classList.add("is-hidden");
+       } else {
+        // 위로 스크롤하면 다시 보이기
+         header.classList.remove("is-hidden");
+       }
+
+        lastY = currentY;
+        ticking = false;
+      }
+
+      window.addEventListener("scroll", () => {
+        if (!ticking) {
+          window.requestAnimationFrame(onScroll);
+          ticking = true;
+        }
+      });
+    })();
+    (function () {
       const btn = document.querySelector(".nav-toggle");
       const mobileNav = document.getElementById("mobileNav");
       if (!btn || !mobileNav) return;
-  
       function closeMenu() {
         mobileNav.hidden = true;
         btn.setAttribute("aria-expanded", "false");
         btn.setAttribute("aria-label", "Open menu");
         btn.querySelector(".nav-toggle-icon").textContent = "☰";
       }
-  
       function openMenu() {
         mobileNav.hidden = false;
         btn.setAttribute("aria-expanded", "true");
         btn.setAttribute("aria-label", "Close menu");
         btn.querySelector(".nav-toggle-icon").textContent = "✕";
       }
-  
       btn.addEventListener("click", () => {
         const isOpen = btn.getAttribute("aria-expanded") === "true";
         isOpen ? closeMenu() : openMenu();
       });
-  
-      // 메뉴 클릭하면 자동 닫힘(모바일 UX)
       mobileNav.addEventListener("click", (e) => {
         if (e.target.tagName.toLowerCase() === "a") closeMenu();
       });
-  
-      // 화면 커지면(데스크탑) 모바일 메뉴 강제 닫기
       window.addEventListener("resize", () => {
         if (window.innerWidth > 720) closeMenu();
       });
@@ -62,24 +86,21 @@
         A minimal archive of projects and photographs.
       </p>
     </section>
-
-    <section class="grid">
-      <a class="card" href="projects.html">
-        <img src="media/index/DSC04746.JPG" alt="Project thumbnail 1" loading="lazy">
-        <div class="meta">Project 01</div>
-      </a>
-      <a class="card" href="projects.html">
-        <img src="assets/images/02.jpg" alt="Project thumbnail 2" loading="lazy">
-        <div class="meta">Project 02</div>
-      </a>
-      <a class="card" href="projects.html">
-        <img src="assets/images/03.jpg" alt="Project thumbnail 3" loading="lazy">
-        <div class="meta">Project 03</div>
-      </a>
-      <a class="card" href="projects.html">
-        <img src="assets/images/04.jpg" alt="Project thumbnail 4" loading="lazy">
-        <div class="meta">Project 04</div>
-      </a>
+    <section class="container-full">
+      <div class="grid">
+        <a class="card" href="projects.html">
+          <img src="media/index/DSC04746.JPG" alt="Project thumbnail 1" loading="lazy">
+          <div class="meta">Project 01</div>
+        </a>
+        <a class="card" href="projects.html">
+          <img src="media/index/DSC04746.JPG" alt="Project thumbnail 1" loading="lazy">
+          <div class="meta">Project 01</div>
+        </a>
+        <a class="card" href="projects.html">
+          <img src="media/index/DSC04746.JPG" alt="Project thumbnail 1" loading="lazy">
+          <div class="meta">Project 01</div>
+        </a>
+      </div>
     </section>
   </main>
 
