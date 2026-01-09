@@ -45,6 +45,7 @@
   }
   
   .brand{
+    font-size: xx-large;
     font-weight: 600;
     letter-spacing: .2px;
   }
@@ -98,9 +99,9 @@
   }
   
   .meta{
-    margin-top: 10px;
-    font-size: 13px;
-    color: var(--muted);
+    margin-top: 18px;
+    font-size: 20px;
+
   }
   
   .footer{
@@ -187,7 +188,7 @@
     right: 0;
     z-index: 999;
     transform: translateY(0);
-    transition: transform 0.28s ease;
+    transition: transform 0.4s ease;
     will-change: transform;
   }
 
