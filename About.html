@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Projects — Donghun You</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="header">
+    <div class="header-inner">
+      <a class="brand" href="index.html">H to G</a>
+      <nav class="nav">
+        <a href="projects.html">Projects</a>
+        <a href="Tools.html">Tools</a>
+        <a href="about.html">About</a>
+        <a href="contact.html">Contact</a>
+      </nav>
+    </div>
+  </header>
+  <main class="container">
+    <section class="hero">
+      <p class="kicker">About</p>
+      <h1 class="title">What Remains After Looking</h1>
+      <p class="sub">A quiet record of photographs.</p>
+    </section>
+    <section class="hero">
+      <p>
+        HT0G began as a personal photography archive under the name hoontography.<br>
+        It remains as a working title for the way I look and photograph.<br><br>
+        
+        My work begins with immersion.<br>
+        I am drawn to moments when strong sunlight cuts through shadow
+        when light and darkness meet
+        and a scene forms quietly in between.<br><br>
+        
+        Such moments are rarely announced.
+        So I tend to wait rather than rush.
+        
+        I set a frame
+        and wait for the final element to enter<br>
+        a slight shift of light,
+        a passing figure,
+        or the moment when the scene settles on its own.
+        
+        This is why I return to the same places.<br>
+        Sunlight may seem familiar,
+        but it never arrives in the same way.<br><br>
+        
+        These photographs are shaped
+        less by intention
+        and more by instinct.<br><br>
+        
+        This site is not a conclusion,
+        but a place where
+        what remains after looking
+        is allowed to stay.
+      </p>
+    </section>
+    <section class="hero">
+      <p>
+        ‘hoontography’라는 이름으로 시작된 개인적인 사진 아카이브에서 비롯되었다.<br>
+        지금은 내가 바라보고 사진을 찍는 방식을 가리키는 작업명으로 남아 있다.<br><br>
+  
+        내 사진 작업은 몰입감에서 출발한다.
+        나는 맑은 날, 강한 햇빛이 그림자를 가르며 스며드는 순간에 이끌린다.<br>
+        분명한 빛과 짙은 그림자가 맞닿으며
+        장면이 조용히 형성되는 때다.<br><br>
+  
+        그런 순간들은 대부분
+        미리 예고되지 않는다.
+        그래서 나는 서두르기보다 기다리는 편이다.<br>
+  
+        구도를 먼저 세워두고,
+        그 안에 장면을 완성할 마지막 요소가 들어오기를 기다린다.<br>
+        빛이 조금 더 기울거나,
+        누군가 스쳐 지나가거나,
+        장면이 스스로 정돈되는 순간을 위해서다.<br><br>
+  
+        같은 장소를 반복해서 찾는 이유도 여기에 있다.
+        태양빛은 늘 비슷해 보이지만,<br>
+        결코 같은 모습으로 머무르지 않기 때문이다.<br><br>
+  
+        이 사진들은
+        명확한 의도보다는
+        직감에 더 가깝게 만들어진다.<br><br>
+  
+        이곳은 하나의 결론이 아니라,
+        바라본 뒤에 남은 것들이
+        잠시 머무는 장소다.<br><br>
+      </p>
+    </section>
+  </main>
+  <footer class="footer">
+    <p>© <span id="y"></span>. HtoG. All rights reserved.</p>
+  </footer>
+  <script>
+    document.getElementById("y").textContent = new Date().getFullYear();
+  </script>
+  <script>
+    (function () {
+      const header = document.querySelector(".header");
+      if (!header) return;
+      const mq = window.matchMedia("(max-width: 720px)");
+      if (!mq.matches) return;
+      let lastY = window.scrollY;
+      window.addEventListener("scroll", () => {
+        const y = window.scrollY;
+        if (y > lastY && y > 80) header.classList.add("is-hidden");
+        else header.classList.remove("is-hidden");
+        lastY = y;
+      }, { passive: true });
+    })();
+  </script>
+</body>
+</html>
