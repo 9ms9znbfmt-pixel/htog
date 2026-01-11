@@ -98,8 +98,33 @@
     color: var(--muted);
     font-size: 13px;
   }
-
-
+  .tool-item{
+    display: inline-block;
+    margin: 16px;
+    text-align: center;
+  }
+  
+  .tool-item img{
+    max-width: 490px; 
+    height: auto;
+    display: block;
+    margin: 0 auto 8px;
+  }
+  .tool-item p{
+    font-size: 13px;
+    color: var(--muted);
+  }
+  @media (max-width: 760px){
+    .page-tools .tool{
+      grid-template-columns: 1fr;
+      text-align: center;
+    }
+  
+    .page-tools .tool img{
+      max-width: 50%;
+      margin: 0 auto;
+    }
+  }
 .page-selected .grid{
   display: flex;
   flex-direction: column;
