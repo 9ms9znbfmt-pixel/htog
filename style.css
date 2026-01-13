@@ -90,7 +90,8 @@
   }
   .meta{
     margin-top: 20px;
-    font-size: 30px;
+    font-size: 23px;
+    font-weight: 500;
   }
   .footer{
     border-top: 1px solid var(--line);
