@@ -125,6 +125,10 @@
       max-width: 50%;
       margin: 0 auto;
     }
+    .page-tools .tool-item img{
+      max-width: 99%;
+      margin: 0 auto;
+    }
   }
 .page-selected .grid{
   display: flex;
