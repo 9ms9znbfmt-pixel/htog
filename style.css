@@ -35,7 +35,6 @@ a{ color: inherit; text-decoration: none; }
   border: 1px solid var(--line);
   box-shadow: 0 12px 35px rgba(0,0,0,0.08);
 }
-
 .note-frame{
   padding-left: 5%;
   padding-right: 5%;
@@ -84,6 +83,8 @@ a{ color: inherit; text-decoration: none; }
   grid-template-columns: repeat(4, minmax(0, 230px));
   gap: clamp(12px, 2vw, 18px);
   padding: 10px 0 clamp(26px, 3vw, 40px);
+  align-items:center;
+  justify-content: center;
 }
 
 .thumb{
@@ -91,6 +92,8 @@ a{ color: inherit; text-decoration: none; }
   border: 1px solid var(--line);
   background: #fff;
   overflow: hidden;
+  padding: 0%;
+  line-height: 0;
 }
 
 .thumb img{
@@ -98,6 +101,10 @@ a{ color: inherit; text-decoration: none; }
   height: auto;
   object-fit: cover;
   display:block;
+}
+
+.thumb.wide{
+  grid-column: span 2;
 }
 
 .bottom-rule{
@@ -125,8 +132,9 @@ a{ color: inherit; text-decoration: none; }
 .top-links a:hover{ text-decoration: underline; text-underline-offset: 4px; }
 
 @media (max-width: 720px){
-  .thumbs{ grid-template-columns: 1fr; }
-  .thumb img{ height: auto; }
+
+  .thumbs{ grid-template-columns: 1fr;}
+  .thumb img{ height: auto; width: auto; max-width: 100%; display: block;}
 
   .top-links{ gap: 14px; flex-wrap: wrap; }
 }
@@ -511,5 +519,16 @@ a{ color: inherit; text-decoration: none; }
 
   .page-projects-card .project-info{
     text-align: center;
+  }
+}
+
+/* Selected page: landscape variant */
+.page-selected-card .selected.is-landscape{
+  grid-template-columns: 1.2fr 0.8fr; /* 왼쪽(이미지) 더 넓게 */
+}
+
+@media (max-width: 720px){
+  .page-selected-card .selected.is-landscape{
+    grid-template-columns: 1fr; /* 모바일은 그대로 1열 */
   }
 }
