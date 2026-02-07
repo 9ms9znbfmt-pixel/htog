@@ -133,9 +133,9 @@ a{ color: inherit; text-decoration: none; }
 
 @media (max-width: 720px){
 
-  .thumbs{ grid-template-columns: 1fr;}
+  .thumbs{ grid-template-columns: 1fr; justify-content: center;}
   .thumb img{ height: auto; width: auto; max-width: 100%; display: block;}
-
+  .thumb.wide{grid-column: auto;}
   .top-links{ gap: 14px; flex-wrap: wrap; }
 }
 .page-selected-card .selected{
