@@ -569,13 +569,7 @@ a{ color: inherit; text-decoration: none; }
 
 .lb-img:active{ cursor: grabbing; }
 
-/* 모바일에서 약간 더 꽉 차게 */
-@media (max-width: 720px){
-  .lb-img{
-    max-width: 60vw;
-    max-height: 60vh;
-  }
-}
+
 /* ===== Fullscreen Image Viewer ===== */
 
 /* 라이트박스 열리면 바디 고정 */
