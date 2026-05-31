@@ -173,6 +173,40 @@
       gap: 24px;
     }
 
+    #userKeywords {
+      width: 100%;
+      background: transparent;
+      border: 1px solid rgba(232, 226, 216, 0.22);
+      color: #e8e2d8;
+      padding: 12px;
+      font-size: 14px;
+      outline: none;
+    }
+
+    #userKeywords::placeholder {
+      color: rgba(232, 226, 216, 0.35);
+    }
+
+    #submitButton {
+      margin-top: 12px;
+      background: #e8e2d8;
+      color: #0d0d0d;
+      border: none;
+      padding: 10px 16px;
+      cursor: pointer;
+    }
+
+    #submitButton:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    #submitStatus {
+      margin-top: 12px;
+      font-size: 13px;
+      opacity: 0.65;
+    }
+
     .question {
       margin-top: 86px;
       font-size: clamp(28px, 5vw, 56px);
@@ -246,7 +280,7 @@
     <section class="upload-box">
       <input id="imageInput" type="file" accept="image/*" />
       <div class="hint">
-        이 버전은 서버 없이 브라우저 안에서만 분석합니다. 사진은 외부로 업로드되지 않습니다.
+        사진을 선택하면 브라우저에서 분석하고, Submit을 누르면 이미지와 키워드가 Supabase에 저장됩니다.
       </div>
     </section>
 
@@ -265,6 +299,13 @@
         <div class="section opposite">
           <div class="section-title">Underneath</div>
           <div class="keywords" id="oppositeKeywords"></div>
+        </div>
+
+        <div class="section">
+          <div class="section-title">Your Words</div>
+          <input id="userKeywords" type="text" placeholder="공허, 여름, 바람" />
+          <button id="submitButton">Submit</button>
+          <div id="submitStatus"></div>
         </div>
 
         <div class="section">
@@ -287,16 +328,31 @@
     <canvas id="canvas"></canvas>
   </main>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <script>
+    const supabaseUrl = "https://zyuzdpbwhbadqdnegjcv.supabase.co";
+    const supabaseKey = "sb_publishable_PxwhypVypXlFmJKnnQ3xyQ_3K0XctfT";
+    const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
+
     const input = document.getElementById("imageInput");
     const preview = document.getElementById("preview");
     const emptyText = document.getElementById("emptyText");
     const canvas = document.getElementById("canvas");
     const ctx = canvas.getContext("2d");
+    const submitButton = document.getElementById("submitButton");
+    const submitStatus = document.getElementById("submitStatus");
+
+    let selectedFile = null;
+    let currentAnalysis = null;
 
     input.addEventListener("change", function () {
       const file = input.files[0];
       if (!file) return;
+
+      selectedFile = file;
+      currentAnalysis = null;
+      submitStatus.textContent = "";
 
       const reader = new FileReader();
 
@@ -311,6 +367,65 @@
 
     preview.addEventListener("load", function () {
       analyzeImage(preview);
+    });
+
+    submitButton.addEventListener("click", async function () {
+      const keywordText = document.getElementById("userKeywords").value.trim();
+
+      if (!selectedFile) {
+        submitStatus.textContent = "이미지를 먼저 선택해주세요.";
+        return;
+      }
+
+      if (!keywordText) {
+        submitStatus.textContent = "키워드를 하나 이상 입력해주세요.";
+        return;
+      }
+
+      if (!currentAnalysis) {
+        submitStatus.textContent = "이미지 분석이 아직 끝나지 않았습니다.";
+        return;
+      }
+
+      submitButton.disabled = true;
+      submitStatus.textContent = "업로드 중...";
+
+      const safeName = selectedFile.name.replaceAll(" ", "_");
+      const fileName = `${Date.now()}_${safeName}`;
+
+      const { error: uploadError } = await supabaseClient.storage
+        .from("images")
+        .upload(fileName, selectedFile);
+
+      if (uploadError) {
+        submitStatus.textContent = "이미지 업로드 실패: " + uploadError.message;
+        submitButton.disabled = false;
+        return;
+      }
+
+      const { data: urlData } = supabaseClient.storage
+        .from("images")
+        .getPublicUrl(fileName);
+
+      const { error: insertError } = await supabaseClient
+        .from("submissions")
+        .insert({
+          image_url: urlData.publicUrl,
+          keywords: keywordText,
+          brightness: currentAnalysis.brightness,
+          contrast: currentAnalysis.contrast,
+          warmth: currentAnalysis.warmth,
+          saturation: currentAnalysis.saturation
+        });
+
+      if (insertError) {
+        submitStatus.textContent = "DB 저장 실패: " + insertError.message;
+        submitButton.disabled = false;
+        return;
+      }
+
+      submitStatus.textContent = "저장 완료.";
+      submitButton.disabled = false;
     });
 
     function analyzeImage(img) {
@@ -374,6 +489,7 @@
         opposite_keywords: getOppositeKeywords(brightness, contrast, warmth, saturation, darkArea, brightArea)
       };
 
+      currentAnalysis = analysis;
       renderAnalysis(analysis);
     }
 
