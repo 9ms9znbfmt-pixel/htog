@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BetaTest</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: #0d0d0d;
+      color: #e8e2d8;
+      font-family: Georgia, "Times New Roman", serif;
+      line-height: 1.7;
+    }
+
+    header {
+      padding: 28px 6vw;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    header a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    nav a {
+      margin-left: 24px;
+      opacity: 0.6;
+      color: inherit;
+      text-decoration: none;
+    }
+
+    main {
+      padding: 70px 6vw 120px;
+    }
+
+    .intro {
+      max-width: 760px;
+      margin-bottom: 64px;
+    }
+
+    .label {
+      font-size: 12px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      opacity: 0.5;
+      margin-bottom: 18px;
+    }
+
+    h1 {
+      font-size: clamp(48px, 9vw, 120px);
+      font-weight: 400;
+      line-height: 0.95;
+      margin: 0 0 28px;
+    }
+
+    .subtitle {
+      font-size: 20px;
+      opacity: 0.72;
+      max-width: 560px;
+    }
+
+    .upload-box {
+      border: 1px dashed rgba(232, 226, 216, 0.25);
+      padding: 28px;
+      margin-bottom: 70px;
+      max-width: 760px;
+      background: rgba(255,255,255,0.02);
+    }
+
+    input[type="file"] {
+      width: 100%;
+      color: #e8e2d8;
+      font-size: 14px;
+    }
+
+    .hint {
+      margin-top: 12px;
+      font-size: 13px;
+      opacity: 0.45;
+    }
+
+    .project {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 64px;
+      align-items: start;
+    }
+
+    .photo-wrap {
+      width: 100%;
+      min-height: 360px;
+      background: #171717;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .photo-wrap img {
+      display: none;
+      width: 100%;
+      height: auto;
+      filter: contrast(1.04);
+    }
+
+    .empty-text {
+      opacity: 0.35;
+      font-size: 14px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .analysis {
+      position: sticky;
+      top: 48px;
+      padding-top: 8px;
+    }
+
+    .section {
+      margin-bottom: 46px;
+    }
+
+    .section-title {
+      font-size: 12px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      opacity: 0.45;
+      margin-bottom: 14px;
+    }
+
+    .keywords {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .keyword {
+      border: 1px solid rgba(232, 226, 216, 0.22);
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 14px;
+      opacity: 0;
+      transform: translateY(8px);
+      animation: fadeUp 0.7s ease forwards;
+    }
+
+    .opposite .keyword {
+      border-color: rgba(232, 226, 216, 0.1);
+      font-style: italic;
+    }
+
+    .metrics {
+      font-size: 13px;
+      opacity: 0.62;
+    }
+
+    .metrics div {
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(232, 226, 216, 0.08);
+      padding: 8px 0;
+      gap: 24px;
+    }
+
+    .question {
+      margin-top: 86px;
+      font-size: clamp(28px, 5vw, 56px);
+      line-height: 1.1;
+      max-width: 840px;
+    }
+
+    .note {
+      margin-top: 34px;
+      max-width: 620px;
+      opacity: 0.58;
+      font-size: 15px;
+    }
+
+    canvas {
+      display: none;
+    }
+
+    @keyframes fadeUp {
+      to {
+        opacity: 0.85;
+        transform: translateY(0);
+      }
+    }
+
+    @media (max-width: 820px) {
+      header {
+        align-items: flex-start;
+      }
+
+      nav a {
+        margin-left: 14px;
+      }
+
+      main {
+        padding-top: 48px;
+      }
+
+      .project {
+        grid-template-columns: 1fr;
+        gap: 36px;
+      }
+
+      .analysis {
+        position: static;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <a href="index.html">HtoG</a>
+    <nav>
+      <a href="projects.html">Projects</a>
+      <a href="notes.html">Notes</a>
+      <a href="about.html">About</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="intro">
+      <div class="label">Project / BetaTest</div>
+      <h1>BetaTest</h1>
+      <p class="subtitle">
+        Upload a photograph. The page reads its light, color, and shadow,
+        then offers words that may begin another conversation.
+      </p>
+    </section>
+
+    <section class="upload-box">
+      <input id="imageInput" type="file" accept="image/*" />
+      <div class="hint">
+        이 버전은 서버 없이 브라우저 안에서만 분석합니다. 사진은 외부로 업로드되지 않습니다.
+      </div>
+    </section>
+
+    <section class="project">
+      <div class="photo-wrap">
+        <div class="empty-text" id="emptyText">No image yet</div>
+        <img id="preview" alt="Uploaded photograph" />
+      </div>
+
+      <aside class="analysis">
+        <div class="section">
+          <div class="section-title">Surface</div>
+          <div class="keywords" id="surfaceKeywords"></div>
+        </div>
+
+        <div class="section opposite">
+          <div class="section-title">Underneath</div>
+          <div class="keywords" id="oppositeKeywords"></div>
+        </div>
+
+        <div class="section">
+          <div class="section-title">Image Metrics</div>
+          <div class="metrics" id="metrics"></div>
+        </div>
+      </aside>
+    </section>
+
+    <section class="question">
+      What would you call this image?
+    </section>
+
+    <p class="note">
+      This project does not try to explain a photograph.
+      It offers words that may or may not belong to it.
+      The point is not accuracy. The point is to begin a conversation.
+    </p>
+
+    <canvas id="canvas"></canvas>
+  </main>
+
+  <script>
+    const input = document.getElementById("imageInput");
+    const preview = document.getElementById("preview");
+    const emptyText = document.getElementById("emptyText");
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+
+    input.addEventListener("change", function () {
+      const file = input.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+
+      reader.onload = function (event) {
+        preview.src = event.target.result;
+        preview.style.display = "block";
+        emptyText.style.display = "none";
+      };
+
+      reader.readAsDataURL(file);
+    });
+
+    preview.addEventListener("load", function () {
+      analyzeImage(preview);
+    });
+
+    function analyzeImage(img) {
+      const maxWidth = 900;
+      const scale = Math.min(1, maxWidth / img.naturalWidth);
+
+      canvas.width = Math.floor(img.naturalWidth * scale);
+      canvas.height = Math.floor(img.naturalHeight * scale);
+
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const data = imageData.data;
+
+      let brightnessSum = 0;
+      let brightnessSquareSum = 0;
+      let warmthSum = 0;
+      let saturationSum = 0;
+      let darkPixels = 0;
+      let brightPixels = 0;
+
+      const totalPixels = data.length / 4;
+
+      for (let i = 0; i < data.length; i += 4) {
+        const r = data[i] / 255;
+        const g = data[i + 1] / 255;
+        const b = data[i + 2] / 255;
+
+        const brightness = (r + g + b) / 3;
+        brightnessSum += brightness;
+        brightnessSquareSum += brightness * brightness;
+
+        if (brightness < 0.25) darkPixels++;
+        if (brightness > 0.75) brightPixels++;
+
+        const warmth = clamp((r - b + 1) / 2);
+        warmthSum += warmth;
+
+        const max = Math.max(r, g, b);
+        const min = Math.min(r, g, b);
+        const saturation = max - min;
+        saturationSum += saturation;
+      }
+
+      const brightness = brightnessSum / totalPixels;
+      const variance = brightnessSquareSum / totalPixels - brightness * brightness;
+      const contrast = Math.sqrt(Math.max(0, variance));
+      const warmth = warmthSum / totalPixels;
+      const saturation = saturationSum / totalPixels;
+      const darkArea = darkPixels / totalPixels;
+      const brightArea = brightPixels / totalPixels;
+
+      const analysis = {
+        brightness,
+        contrast,
+        warmth,
+        saturation,
+        dark_area: darkArea,
+        bright_area: brightArea,
+        keywords: getSurfaceKeywords(brightness, contrast, warmth, saturation, darkArea, brightArea),
+        opposite_keywords: getOppositeKeywords(brightness, contrast, warmth, saturation, darkArea, brightArea)
+      };
+
+      renderAnalysis(analysis);
+    }
+
+    function getSurfaceKeywords(brightness, contrast, warmth, saturation, darkArea, brightArea) {
+      const words = [];
+
+      if (brightness > 0.66) words.push("light", "openness");
+      if (brightness < 0.36) words.push("silence", "night");
+
+      if (contrast > 0.24) words.push("tension", "shadow");
+      if (contrast < 0.13) words.push("softness", "stillness");
+
+      if (warmth > 0.57) words.push("warmth", "afterglow");
+      if (warmth < 0.43) words.push("coldness", "distance");
+
+      if (saturation < 0.16) words.push("fading", "quiet");
+      if (saturation > 0.34) words.push("vivid", "pulse");
+
+      if (darkArea > 0.34) words.push("void", "weight");
+      if (brightArea > 0.28) words.push("memory", "air");
+
+      if (words.length === 0) words.push("trace", "ordinary", "moment");
+
+      return unique(words).slice(0, 6);
+    }
+
+    function getOppositeKeywords(brightness, contrast, warmth, saturation, darkArea, brightArea) {
+      const words = [];
+
+      if (brightness > 0.64) words.push("sadness", "temporary", "fading");
+      if (brightness < 0.36) words.push("hope", "soft light", "return");
+
+      if (warmth > 0.57) words.push("distance", "loneliness");
+      if (warmth < 0.43) words.push("comfort", "memory");
+
+      if (saturation > 0.32) words.push("emptiness", "afterimage");
+      if (saturation < 0.16) words.push("desire", "small warmth");
+
+      if (contrast > 0.25) words.push("calm");
+      if (darkArea > 0.34) words.push("opening");
+
+      if (words.length === 0) words.push("distance", "memory", "afterimage");
+
+      return unique(words).slice(0, 5);
+    }
+
+    function renderAnalysis(analysis) {
+      renderKeywords("surfaceKeywords", analysis.keywords);
+      renderKeywords("oppositeKeywords", analysis.opposite_keywords);
+
+      const metrics = [
+        ["brightness", analysis.brightness],
+        ["contrast", analysis.contrast],
+        ["warmth", analysis.warmth],
+        ["saturation", analysis.saturation],
+        ["dark area", analysis.dark_area],
+        ["bright area", analysis.bright_area]
+      ];
+
+      const metricsContainer = document.getElementById("metrics");
+      metricsContainer.innerHTML = "";
+
+      metrics.forEach(([name, value]) => {
+        const row = document.createElement("div");
+        row.innerHTML = `<span>${name}</span><span>${value.toFixed(3)}</span>`;
+        metricsContainer.appendChild(row);
+      });
+    }
+
+    function renderKeywords(id, words) {
+      const container = document.getElementById(id);
+      container.innerHTML = "";
+
+      words.forEach((word, index) => {
+        const span = document.createElement("span");
+        span.className = "keyword";
+        span.style.animationDelay = `${index * 0.13}s`;
+        span.textContent = word;
+        container.appendChild(span);
+      });
+    }
+
+    function clamp(value) {
+      return Math.max(0, Math.min(1, value));
+    }
+
+    function unique(array) {
+      return [...new Set(array)];
+    }
+  </script>
+</body>
+</html>
