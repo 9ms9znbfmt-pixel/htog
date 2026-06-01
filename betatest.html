@@ -396,9 +396,12 @@
       analyzeImage(preview);
       await detectObjects(preview);
 
-      if (window.generateCaption) {
+      if (window.captionerReady && window.generateCaption) {
         currentCaption = await window.generateCaption(preview);
         await findSimilarReadings();
+      } else {
+        document.getElementById("captionText").textContent =
+          "Caption model is still loading. 이미지를 다시 선택해주세요.";
       }
     });
 
@@ -760,6 +763,8 @@
 
     const captionBox = document.getElementById("captionText");
 
+    window.captionerReady = false;
+
     document.getElementById("submitStatus")
       .textContent = "캡션 모델 로딩 중...";
 
@@ -768,18 +773,17 @@
       "Xenova/vit-gpt2-image-captioning"
     );
 
+    window.captionerReady = true;
+
     document.getElementById("submitStatus")
       .textContent = "캡션 모델 준비 완료.";
 
     window.generateCaption = async function (imageElement) {
-      if (!window.captioner) return "";
-
       captionBox.textContent = "Caption generating...";
 
       const result = await window.captioner(imageElement.src);
 
-      const caption =
-        result?.[0]?.generated_text || "";
+      const caption = result?.[0]?.generated_text || "";
 
       captionBox.textContent = caption || "No caption generated";
 
