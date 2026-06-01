@@ -634,19 +634,66 @@
       renderObjects(currentObjects);
     }
 
-preview.addEventListener("load", async function () {
-  analyzeImage(preview);
-  await detectObjects(preview);
+    async function findSimilarReadings() {
+      if (!currentAnalysis) return;
 
-  await findSimilarReadings();
+      const { data, error } = await supabaseClient
+        .from("submissions")
+        .select("keywords, brightness, contrast, warmth, saturation, dark_area, bright_area, objects");
 
-  if (window.captionerReady && window.generateCaption) {
-    currentCaption = await window.generateCaption(preview);
-  } else {
-    document.getElementById("captionText").textContent =
-      "Caption unavailable";
-  }
-});
+      if (error) {
+        console.error(error);
+        return;
+      }
+
+      let similarRows = [];
+
+      data.forEach(row => {
+        if (!row.keywords) return;
+
+        const distance =
+          Math.abs((row.brightness || 0) - currentAnalysis.brightness) +
+          Math.abs((row.contrast || 0) - currentAnalysis.contrast) +
+          Math.abs((row.warmth || 0) - currentAnalysis.warmth) +
+          Math.abs((row.saturation || 0) - currentAnalysis.saturation) +
+          Math.abs((row.dark_area || 0) - currentAnalysis.dark_area) +
+          Math.abs((row.bright_area || 0) - currentAnalysis.bright_area);
+
+        similarRows.push({
+          keywords: row.keywords,
+          distance: distance
+        });
+      });
+
+      similarRows.sort((a, b) => a.distance - b.distance);
+
+      const collectedKeywords = [];
+
+      similarRows.slice(0, 5).forEach(row => {
+        collectedKeywords.push(
+          ...row.keywords
+            .split(",")
+            .map(k => k.trim())
+            .filter(k => k.length > 0)
+        );
+      });
+
+      renderSimilarKeywords(collectedKeywords);
+    }
+
+    preview.addEventListener("load", async function () {
+      analyzeImage(preview);
+      await detectObjects(preview);
+
+      await findSimilarReadings();
+
+      if (window.captionerReady && window.generateCaption) {
+        currentCaption = await window.generateCaption(preview);
+      } else {
+        document.getElementById("captionText").textContent =
+          "Caption unavailable";
+      }
+    });
 
     function renderSimilarKeywords(words) {
 
