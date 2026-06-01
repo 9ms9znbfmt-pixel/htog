@@ -290,6 +290,11 @@
         <img id="preview" alt="Uploaded photograph" />
       </div>
 
+      <div class="section">
+        <div class="section-title">Objects</div>
+        <div class="keywords" id="objectKeywords"></div>
+      </div>
+
       <aside class="analysis">
         <div class="section">
           <div class="section-title">Surface</div>
@@ -329,6 +334,8 @@
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
 
   <script>
     const supabaseUrl = "https://zyuzdpbwhbadqdnegjcv.supabase.co";
@@ -342,9 +349,18 @@
     const ctx = canvas.getContext("2d");
     const submitButton = document.getElementById("submitButton");
     const submitStatus = document.getElementById("submitStatus");
+    async function loadCocoModel() {
+      submitStatus.textContent = "AI 모델 로딩 중...";
+      cocoModel = await cocoSsd.load();
+      submitStatus.textContent = "AI 모델 준비 완료.";
+    }
+
+loadCocoModel();
 
     let selectedFile = null;
     let currentAnalysis = null;
+    let currentObjects = [];
+    let cocoModel = null;
 
     input.addEventListener("change", function () {
       const file = input.files[0];
@@ -365,8 +381,9 @@
       reader.readAsDataURL(file);
     });
 
-    preview.addEventListener("load", function () {
+    preview.addEventListener("load", async function () {
       analyzeImage(preview);
+      await detectObjects(preview);
     });
 
     submitButton.addEventListener("click", async function () {
@@ -412,11 +429,14 @@
         .insert({
           image_url: urlData.publicUrl,
           keywords: keywordText,
+          objects: currentObjects.join(", "),
           brightness: currentAnalysis.brightness,
           contrast: currentAnalysis.contrast,
           warmth: currentAnalysis.warmth,
-          saturation: currentAnalysis.saturation
-        });
+          saturation: currentAnalysis.saturation,
+          dark_area: currentAnalysis.dark_area,
+          bright_area: currentAnalysis.bright_area
+        })
 
       if (insertError) {
         submitStatus.textContent = "DB 저장 실패: " + insertError.message;
@@ -579,6 +599,58 @@
     function unique(array) {
       return [...new Set(array)];
     }
+
+    async function detectObjects(img) {
+      if (!cocoModel) return;
+
+      const predictions = await cocoModel.detect(img);
+
+      currentObjects = predictions
+        .filter(item => item.score > 0.45)
+        .map(item => item.class);
+
+      currentObjects = unique(currentObjects);
+
+      renderObjects(currentObjects);
+    }
+
+    function renderObjects(objects) {
+      const container = document.getElementById("objectKeywords");
+
+      if (!container) return;
+
+      container.innerHTML = "";
+
+      if (objects.length === 0) {
+        container.innerHTML =
+          '<span class="keyword">unknown</span>';
+        return;
+      }
+
+      objects.forEach((word, index) => {
+        const span = document.createElement("span");
+
+        span.className = "keyword";
+        span.style.animationDelay =
+          `${index * 0.13}s`;
+
+        span.textContent = word;
+
+        container.appendChild(span);
+      });
+    }
+  </script>
+
+  <script type="module">
+    import { pipeline }
+    from 'https://cdn.jsdelivr.net/npm/@xenova/transformers';
+
+    window.captioner = await pipeline(
+      'image-to-text',
+      'Xenova/vit-gpt2-image-captioning'
+    );
+
+    console.log("Caption model loaded");
   </script>
 </body>
 </html>
