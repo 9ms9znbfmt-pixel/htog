@@ -300,6 +300,11 @@
         <div class="metrics" id="captionText">No caption yet</div>
       </div>
 
+      <div class="section">
+        <div class="section-title">Previous Readings</div>
+        <div class="keywords" id="similarKeywords"></div>
+      </div>
+
       <aside class="analysis">
         <div class="section">
           <div class="section-title">Surface</div>
@@ -393,6 +398,7 @@
 
       if (window.generateCaption) {
         currentCaption = await window.generateCaption(preview);
+        await findSimilarReadings();
       }
     });
 
@@ -623,6 +629,103 @@
       currentObjects = unique(currentObjects);
 
       renderObjects(currentObjects);
+    }
+
+    async function findSimilarReadings() {
+
+      if (!currentCaption) return;
+
+      const { data, error } = await supabaseClient
+        .from("submissions")
+        .select("caption, keywords");
+
+      if (error) {
+        console.error(error);
+        return;
+      }
+
+      const currentWords =
+        currentCaption
+          .toLowerCase()
+          .split(" ");
+
+      let collectedKeywords = [];
+
+      data.forEach(row => {
+
+        if (!row.caption || !row.keywords)
+          return;
+
+        const captionWords =
+          row.caption
+            .toLowerCase()
+            .split(" ");
+
+        const overlap =
+          currentWords.filter(word =>
+            captionWords.includes(word)
+          );
+
+        if (overlap.length > 0) {
+
+          collectedKeywords.push(
+            ...row.keywords
+              .split(",")
+              .map(k => k.trim())
+          );
+
+        }
+
+      });
+
+      renderSimilarKeywords(collectedKeywords);
+    }
+
+    function renderSimilarKeywords(words) {
+
+      const container =
+        document.getElementById("similarKeywords");
+
+      container.innerHTML = "";
+
+      if (words.length === 0) {
+
+        container.innerHTML =
+          '<span class="keyword">No previous readings</span>';
+
+        return;
+      }
+
+      const counts = {};
+
+      words.forEach(word => {
+
+        counts[word] =
+          (counts[word] || 0) + 1;
+
+      });
+
+      const sortedWords =
+        Object.entries(counts)
+          .sort((a,b) => b[1] - a[1])
+          .slice(0,10);
+
+      sortedWords.forEach(([word], index) => {
+
+        const span =
+          document.createElement("span");
+
+        span.className = "keyword";
+
+        span.style.animationDelay =
+          `${index * 0.1}s`;
+
+        span.textContent = word;
+
+        container.appendChild(span);
+
+      });
+
     }
 
     function renderObjects(objects) {
