@@ -759,17 +759,17 @@
     import { pipeline } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers';
 
     const captionBox = document.getElementById("captionText");
+
     document.getElementById("submitStatus")
       .textContent = "캡션 모델 로딩 중...";
-
-    submitStatus.textContent = "캡션 모델 로딩 중...";
 
     window.captioner = await pipeline(
       "image-to-text",
       "Xenova/vit-gpt2-image-captioning"
     );
 
-    submitStatus.textContent = "캡션 모델 준비 완료.";
+    document.getElementById("submitStatus")
+      .textContent = "캡션 모델 준비 완료.";
 
     window.generateCaption = async function (imageElement) {
       if (!window.captioner) return "";
@@ -781,7 +781,6 @@
       const caption =
         result?.[0]?.generated_text || "";
 
-      window.currentCaption = caption;
       captionBox.textContent = caption || "No caption generated";
 
       return caption;
