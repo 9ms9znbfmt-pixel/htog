@@ -392,19 +392,6 @@
       reader.readAsDataURL(file);
     });
 
-    preview.addEventListener("load", async function () {
-      analyzeImage(preview);
-      await detectObjects(preview);
-
-      if (window.captionerReady && window.generateCaption) {
-        currentCaption = await window.generateCaption(preview);
-        await findSimilarReadings();
-      } else {
-        document.getElementById("captionText").textContent =
-          "Caption model is still loading. 이미지를 다시 선택해주세요.";
-      }
-    });
-
     submitButton.addEventListener("click", async function () {
       const keywordText = document.getElementById("userKeywords").value.trim();
 
