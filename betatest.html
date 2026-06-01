@@ -634,55 +634,19 @@
       renderObjects(currentObjects);
     }
 
-    async function findSimilarReadings() {
+preview.addEventListener("load", async function () {
+  analyzeImage(preview);
+  await detectObjects(preview);
 
-      if (!currentCaption) return;
+  await findSimilarReadings();
 
-      const { data, error } = await supabaseClient
-        .from("submissions")
-        .select("caption, keywords");
-
-      if (error) {
-        console.error(error);
-        return;
-      }
-
-      const currentWords =
-        currentCaption
-          .toLowerCase()
-          .split(" ");
-
-      let collectedKeywords = [];
-
-      data.forEach(row => {
-
-        if (!row.caption || !row.keywords)
-          return;
-
-        const captionWords =
-          row.caption
-            .toLowerCase()
-            .split(" ");
-
-        const overlap =
-          currentWords.filter(word =>
-            captionWords.includes(word)
-          );
-
-        if (overlap.length > 0) {
-
-          collectedKeywords.push(
-            ...row.keywords
-              .split(",")
-              .map(k => k.trim())
-          );
-
-        }
-
-      });
-
-      renderSimilarKeywords(collectedKeywords);
-    }
+  if (window.captionerReady && window.generateCaption) {
+    currentCaption = await window.generateCaption(preview);
+  } else {
+    document.getElementById("captionText").textContent =
+      "Caption unavailable";
+  }
+});
 
     function renderSimilarKeywords(words) {
 
@@ -760,36 +724,41 @@
 
   <script type="module">
     console.log("module script started");
+
     import { pipeline } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2';
 
     const captionBox = document.getElementById("captionText");
+    const statusBox = document.getElementById("submitStatus");
 
     window.captionerReady = false;
 
-    document.getElementById("submitStatus")
-      .textContent = "캡션 모델 로딩 중...";
+    try {
+      statusBox.textContent = "캡션 모델 로딩 중...";
 
-    window.captioner = await pipeline(
-      "image-to-text",
-      "Xenova/vit-gpt2-image-captioning"
-    );
+      window.captioner = await pipeline(
+        "image-to-text",
+        "Xenova/vit-gpt2-image-captioning"
+      );
 
-    window.captionerReady = true;
+      window.captionerReady = true;
+      statusBox.textContent = "캡션 모델 준비 완료.";
+      console.log("caption model loaded");
 
-    document.getElementById("submitStatus")
-      .textContent = "캡션 모델 준비 완료.";
+      window.generateCaption = async function (imageElement) {
+        captionBox.textContent = "Caption generating...";
 
-    window.generateCaption = async function (imageElement) {
-      captionBox.textContent = "Caption generating...";
+        const result = await window.captioner(imageElement.src);
+        const caption = result?.[0]?.generated_text || "";
 
-      const result = await window.captioner(imageElement.src);
+        captionBox.textContent = caption || "No caption generated";
 
-      const caption = result?.[0]?.generated_text || "";
-
-      captionBox.textContent = caption || "No caption generated";
-
-      return caption;
-    };
+        return caption;
+      };
+    } catch (error) {
+      console.error("caption model load failed:", error);
+      statusBox.textContent = "캡션 모델 로딩 실패: " + error.message;
+      captionBox.textContent = "Caption unavailable";
+    }
   </script>
 </body>
 </html>
