@@ -364,6 +364,9 @@
     let currentObjects = [];
     let cocoModel = null;
     let currentCaption = "";
+    let currentDominantColor = "";
+    let currentColorMood = "";
+    let currentAccentColor = "";
 
     async function loadCocoModel() {
       submitStatus.textContent = "AI 모델 로딩 중...";
@@ -442,7 +445,10 @@
           warmth: currentAnalysis.warmth,
           saturation: currentAnalysis.saturation,
           dark_area: currentAnalysis.dark_area,
-          bright_area: currentAnalysis.bright_area
+          bright_area: currentAnalysis.bright_area,
+          dominant_color: currentDominantColor,
+          color_mood: currentColorMood,
+          accent_color: currentAccentColor,
         })
 
       if (insertError) {
@@ -466,6 +472,7 @@
 
       const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
       const data = imageData.data;
+      const totalPixels = data.length / 4;
 
       let brightnessSum = 0;
       let brightnessSquareSum = 0;
@@ -473,13 +480,32 @@
       let saturationSum = 0;
       let darkPixels = 0;
       let brightPixels = 0;
+      let rSum = 0;
+      let gSum = 0;
+      let bSum = 0;
 
-      const totalPixels = data.length / 4;
+      const colorBuckets = {
+        red: 0,
+        orange: 0,
+        yellow: 0,
+        green: 0,
+        blue: 0,
+        purple: 0
+      };
 
       for (let i = 0; i < data.length; i += 4) {
         const r = data[i] / 255;
         const g = data[i + 1] / 255;
         const b = data[i + 2] / 255;
+
+        rSum += r;
+        gSum += g;
+        bSum += b;
+
+        const detectedColor = detectPixelColor(r, g, b);
+        if (detectedColor) {
+          colorBuckets[detectedColor]++;
+        }
 
         const brightness = (r + g + b) / 3;
         brightnessSum += brightness;
@@ -504,6 +530,17 @@
       const saturation = saturationSum / totalPixels;
       const darkArea = darkPixels / totalPixels;
       const brightArea = brightPixels / totalPixels;
+      const avgR = rSum / totalPixels;
+      const avgG = gSum / totalPixels;
+      const avgB = bSum / totalPixels;
+
+      const dominantColor = getDominantColor(avgR, avgG, avgB);
+      const colorMood = getColorMood(brightness, saturation, warmth, contrast);
+      const accentColor = getAccentColor(colorBuckets, totalPixels);
+
+      currentDominantColor = dominantColor;
+      currentColorMood = colorMood;
+      currentAccentColor = accentColor;
 
       const analysis = {
         brightness,
@@ -513,7 +550,10 @@
         dark_area: darkArea,
         bright_area: brightArea,
         keywords: getSurfaceKeywords(brightness, contrast, warmth, saturation, darkArea, brightArea),
-        opposite_keywords: getOppositeKeywords(brightness, contrast, warmth, saturation, darkArea, brightArea)
+        opposite_keywords: getOppositeKeywords(brightness, contrast, warmth, saturation, darkArea, brightArea),
+        dominant_color: dominantColor,
+        color_mood: colorMood,
+        accent_color: accentColor,
       };
 
       currentAnalysis = analysis;
@@ -573,7 +613,10 @@
         ["warmth", analysis.warmth],
         ["saturation", analysis.saturation],
         ["dark area", analysis.dark_area],
-        ["bright area", analysis.bright_area]
+        ["bright area", analysis.bright_area],
+        ["dominant color", analysis.dominant_color],
+        ["color mood", analysis.color_mood],
+        ["accent color", analysis.accent_color]
       ];
 
       const metricsContainer = document.getElementById("metrics");
@@ -581,7 +624,11 @@
 
       metrics.forEach(([name, value]) => {
         const row = document.createElement("div");
-        row.innerHTML = `<span>${name}</span><span>${value.toFixed(3)}</span>`;
+
+        const displayValue =
+          typeof value === "number" ? value.toFixed(3) : value;
+
+        row.innerHTML = `<span>${name}</span><span>${displayValue}</span>`;
         metricsContainer.appendChild(row);
       });
     }
@@ -607,6 +654,75 @@
       return [...new Set(array)];
     }
 
+    function getDominantColor(r, g, b) {
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+
+    if (max - min < 0.08) return "monochrome";
+
+    if (r > g && r > b) {
+      if (g > b) return "orange";
+      return "red";
+    }
+
+    if (g > r && g > b) {
+      if (r > b) return "yellow-green";
+      return "green";
+    }
+
+    if (b > r && b > g) {
+      if (r > g) return "purple-blue";
+      return "blue";
+    }
+
+    return "neutral";
+  }
+
+  function getColorMood(brightness, saturation, warmth, contrast) {
+    if (saturation < 0.12) return "muted";
+    if (saturation > 0.36 && brightness > 0.55) return "vivid";
+    if (warmth > 0.6 && brightness > 0.45) return "warm";
+    if (warmth < 0.42 && brightness > 0.45) return "clear";
+    if (contrast > 0.28) return "dramatic";
+    if (brightness < 0.35) return "dim";
+    return "soft";
+  }
+
+  function detectPixelColor(r, g, b) {
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    const saturation = max - min;
+
+    if (saturation < 0.25 || max < 0.25) return null;
+
+    if (r > 0.55 && g < 0.45 && b < 0.45) return "red";
+    if (r > 0.55 && g > 0.32 && b < 0.25) return "orange";
+    if (r > 0.55 && g > 0.55 && b < 0.35) return "yellow";
+    if (g > 0.5 && r < 0.45 && b < 0.45) return "green";
+    if (b > 0.5 && r < 0.45 && g < 0.55) return "blue";
+    if (r > 0.45 && b > 0.45 && g < 0.35) return "purple";
+
+    return null;
+  }
+
+  function getAccentColor(colorBuckets, totalPixels) {
+    let bestColor = "none";
+    let bestCount = 0;
+
+    Object.entries(colorBuckets).forEach(([color, count]) => {
+      if (count > bestCount) {
+        bestColor = color;
+        bestCount = count;
+      }
+    });
+
+    const ratio = bestCount / totalPixels;
+
+    if (ratio < 0.015) return "none";
+
+    return bestColor;
+  }
+
     async function detectObjects(img) {
       if (!cocoModel) return;
 
@@ -626,7 +742,7 @@
 
       const { data, error } = await supabaseClient
         .from("submissions")
-        .select("keywords, brightness, contrast, warmth, saturation, dark_area, bright_area, objects");
+        .select("keywords, brightness, contrast, warmth, saturation, dark_area, bright_area, objects, dominant_color, color_mood, accent_color");
 
       if (error) {
         console.error(error);
@@ -638,13 +754,25 @@
       data.forEach(row => {
         if (!row.keywords) return;
 
-        const distance =
+        let distance =
           Math.abs((row.brightness || 0) - currentAnalysis.brightness) +
           Math.abs((row.contrast || 0) - currentAnalysis.contrast) +
           Math.abs((row.warmth || 0) - currentAnalysis.warmth) +
           Math.abs((row.saturation || 0) - currentAnalysis.saturation) +
           Math.abs((row.dark_area || 0) - currentAnalysis.dark_area) +
           Math.abs((row.bright_area || 0) - currentAnalysis.bright_area);
+
+        if (row.dominant_color && row.dominant_color !== currentDominantColor) {
+          distance += 0.2;
+        }
+
+        if (row.color_mood && row.color_mood !== currentColorMood) {
+          distance += 0.15;
+        }
+
+        if (row.accent_color && row.accent_color !== currentAccentColor) {
+          distance += 0.25;
+        }
 
         similarRows.push({
           keywords: row.keywords,
