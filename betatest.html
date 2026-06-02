@@ -978,26 +978,25 @@
     }
   </script>
   <script type="module">
-  console.log("CLIP test started");
+    console.log("CLIP test started");
 
-  try {
-    const classifier = await pipeline(
-      "zero-shot-image-classification",
-      "Xenova/clip-vit-base-patch32"
-    );
+    try {
+      const { pipeline } = await import(
+        "https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2"
+      );
 
-    console.log("Transformers import success");
+      console.log("Transformers import success");
 
-    window.clipClassifier = await pipeline(
-      "zero-shot-image-classification",
-      "Xenova/clip-vit-base-patch32"
-    );
+      window.clipClassifier = await pipeline(
+        "zero-shot-image-classification",
+        "Xenova/clip-vit-base-patch32"
+      );
 
-    console.log("CLIP model loaded");
-  } catch (error) {
-    console.error("CLIP test failed:", error);
-  }
-</script>
+      console.log("CLIP model loaded");
+    } catch (error) {
+      console.error("CLIP test failed:", error);
+    }
+  </script>
 </body>
 
 </html>
