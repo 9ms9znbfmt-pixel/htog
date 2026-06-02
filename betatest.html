@@ -364,6 +364,8 @@
     let currentColorMood = "";
     let currentAccentColor = "";
     let currentColorPalette = "";
+    let currentColorTone = "";
+    let currentAccentTone = "";
 
     async function loadCocoModel() {
       submitStatus.textContent = "AI 모델 로딩 중...";
@@ -490,14 +492,20 @@
       let bSum = 0;
 
       const colorBuckets = {
-        black: 0,
-        white: 0,
-        red: 0,
-        orange: 0,
-        yellow: 0,
-        green: 0,
-        blue: 0,
-        purple: 0
+        black:{count:0,r:0,g:0,b:0},
+        white:{count:0,r:0,g:0,b:0},
+        gray:{count:0,r:0,g:0,b:0},
+        red:{count:0,r:0,g:0,b:0},
+        orange:{count:0,r:0,g:0,b:0},
+        yellow:{count:0,r:0,g:0,b:0},
+        green:{count:0,r:0,g:0,b:0},
+        blue:{count:0,r:0,g:0,b:0},
+        purple:{count:0,r:0,g:0,b:0},
+        brown:{count:0,r:0,g:0,b:0},
+        pink:{count:0,r:0,g:0,b:0},
+        cyan:{count:0,r:0,g:0,b:0},
+        beige:{count:0,r:0,g:0,b:0},
+        cream:{count:0,r:0,g:0,b:0}
       };
 
       for (let i = 0; i < data.length; i += 4) {
@@ -511,7 +519,11 @@
 
         const detectedColor = detectPixelColor(r, g, b);
         if (detectedColor) {
-          colorBuckets[detectedColor]++;
+          colorBuckets[detectedColor].count++;
+
+          colorBuckets[detectedColor].r += r;
+          colorBuckets[detectedColor].g += g;
+          colorBuckets[detectedColor].b += b;
         }
 
         const brightness = (r + g + b) / 3;
@@ -541,15 +553,19 @@
       const avgG = gSum / totalPixels;
       const avgB = bSum / totalPixels;
 
-      const dominantColor = getDominantColor(avgR, avgG, avgB);
+      const dominantColor = getDominantColorFromBuckets(colorBuckets, totalPixels);
       const colorMood = getColorMood(brightness, saturation, warmth, contrast);
       const accentColor = getAccentColor(colorBuckets, totalPixels);
       const colorPalette = getColorPalette(colorBuckets, totalPixels);
+      const colorTone = getColorToneFromRGB(avgR, avgG, avgB);
+      const accentTone = getAccentTone(colorBuckets, totalPixels);
 
       currentDominantColor = dominantColor;
       currentColorMood = colorMood;
       currentAccentColor = accentColor;
       currentColorPalette = colorPalette;
+      currentColorTone = colorTone;
+      currentAccentTone = accentTone;
 
       const analysis = {
         brightness,
@@ -564,6 +580,8 @@
         color_mood: colorMood,
         accent_color: accentColor,
         color_palette: colorPalette,
+        color_tone: colorTone,
+        accent_tone: accentTone,
       };
 
       currentAnalysis = analysis;
@@ -628,6 +646,8 @@
         ["color mood", analysis.color_mood],
         ["accent color", analysis.accent_color],
         ["color palette", analysis.color_palette],
+        ["color tone", analysis.color_tone],
+        ["accent tone", analysis.accent_tone],
       ];
 
       const metricsContainer = document.getElementById("metrics");
@@ -722,28 +742,46 @@
     }
 
     function getDominantColor(r, g, b) {
-    const max = Math.max(r, g, b);
-    const min = Math.min(r, g, b);
+      const max = Math.max(r, g, b);
+      const min = Math.min(r, g, b);
 
-    if (max - min < 0.08) return "monochrome";
+      if (max - min < 0.08) return "monochrome";
 
-    if (r > g && r > b) {
-      if (g > b) return "orange";
-      return "red";
+      if (r > g && r > b) {
+        if (g > b) return "orange";
+        return "red";
+      }
+
+      if (g > r && g > b) {
+        if (r > b) return "yellow-green";
+        return "green";
+      }
+
+      if (b > r && b > g) {
+        if (r > g) return "purple-blue";
+        return "blue";
+      }
+
+      return "neutral";
     }
 
-    if (g > r && g > b) {
-      if (r > b) return "yellow-green";
-      return "green";
-    }
+    function getDominantColorFromBuckets(colorBuckets, totalPixels) {
+      let bestColor = "monochrome";
+      let bestCount = 0;
 
-    if (b > r && b > g) {
-      if (r > g) return "purple-blue";
-      return "blue";
-    }
+      Object.entries(colorBuckets).forEach(([color, data]) => {
+        if (data.count > bestCount) {
+          bestColor = color;
+          bestCount = data.count;
+        }
+      });
 
-    return "neutral";
-  }
+      if (bestCount / totalPixels < 0.005) {
+        return "monochrome";
+      }
+
+      return bestColor;
+    }
 
   function getColorMood(brightness, saturation, warmth, contrast) {
     if (saturation < 0.12) return "muted";
@@ -761,17 +799,60 @@
     const brightness = (r + g + b) / 3;
     const saturation = max - min;
 
-    if (brightness < 0.18) return "black";
-    if (brightness > 0.82 && saturation < 0.12) return "white";
+    if (brightness < 0.16) return "black";
+    if (brightness > 0.86 && saturation < 0.10) return "white";
 
-    if (saturation < 0.08) return null;
+    if (saturation < 0.07) {
+      return "gray";
+    }
 
-    if (r > 0.45 && g < 0.38 && b < 0.38) return "red";
-    if (r > 0.42 && g > 0.20 && g < 0.55 && b < 0.28) return "orange";
-    if (r > 0.50 && g > 0.45 && b < 0.35) return "yellow";
-    if (g > 0.38 && r < 0.45 && b < 0.45) return "green";
-    if (b > 0.35 && r < 0.45 && g < 0.55) return "blue";
-    if (r > 0.35 && b > 0.35 && g < 0.35) return "purple";
+    if (
+      brightness > 0.70 &&
+      r > 0.65 &&
+      g > 0.58 &&
+      b > 0.45 &&
+      saturation < 0.22
+    ) {
+      return "cream";
+    }
+
+    if (
+      brightness > 0.45 &&
+      brightness < 0.75 &&
+      r > 0.45 &&
+      g > 0.35 &&
+      b > 0.25 &&
+      r >= g &&
+      g >= b &&
+      saturation < 0.28
+    ) {
+      return "beige";
+    }
+
+    if (
+      r > 0.32 &&
+      g > 0.18 &&
+      g < 0.45 &&
+      b < 0.30 &&
+      brightness < 0.50
+    ) {
+      return "brown";
+    }
+
+    if (r > 0.55 && g > 0.30 && b > 0.38 && saturation < 0.38) {
+      return "pink";
+    }
+
+    if (b > 0.42 && g > 0.42 && r < 0.38) {
+      return "cyan";
+    }
+
+    if (r > 0.45 && g < 0.42 && b < 0.42) return "red";
+    if (r > 0.42 && g > 0.20 && g < 0.60 && b < 0.34) return "orange";
+    if (r > 0.50 && g > 0.45 && b < 0.40) return "yellow";
+    if (g > 0.36 && r < 0.52 && b < 0.52) return "green";
+    if (b > 0.34 && r < 0.52 && g < 0.64) return "blue";
+    if (r > 0.34 && b > 0.34 && g < 0.44) return "purple";
 
     return null;
   }
@@ -780,16 +861,17 @@
     let bestColor = "none";
     let bestCount = 0;
 
-    Object.entries(colorBuckets).forEach(([color, count]) => {
-      if (count > bestCount) {
+    Object.entries(colorBuckets).forEach(([color, data]) => {
+      if (data.count > bestCount) {
         bestColor = color;
-        bestCount = count;
+        bestCount = data.count;
       }
     });
 
     const ratio = bestCount / totalPixels;
 
     if (ratio < 0.005) return "none";
+
     return bestColor;
   }
 
@@ -797,15 +879,80 @@
     const minRatio = 0.005;
 
     return Object.entries(colorBuckets)
-      .map(([color, count]) => ({
-        color,
-        ratio: count / totalPixels
-      }))
-      .filter(item => item.ratio >= minRatio)
+      .map(([color, data]) => {
+        if (data.count === 0) return null;
+
+        const avgR = data.r / data.count;
+        const avgG = data.g / data.count;
+        const avgB = data.b / data.count;
+
+        return {
+          color,
+          tone: getColorToneFromRGB(avgR, avgG, avgB),
+          ratio: data.count / totalPixels
+        };
+      })
+      .filter(item => item && item.ratio >= minRatio)
       .sort((a, b) => b.ratio - a.ratio)
       .slice(0, 3)
-      .map(item => item.color)
+      .map(item => `${item.color}:${item.tone}`)
       .join(", ");
+  }
+
+  function getColorToneFromRGB(r, g, b) {
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    const brightness = (r + g + b) / 3;
+    const saturation = max - min;
+
+    if (brightness < 0.22) return "deep";
+    if (brightness > 0.72) return "light";
+    if (saturation < 0.12) return "muted";
+    if (saturation > 0.35) return "vivid";
+
+    return "normal";
+  }
+
+  function getAccentTone(colorBuckets, totalPixels) {
+
+    let accentColor = null;
+    let bestCount = 0;
+
+    Object.entries(colorBuckets).forEach(([color,data]) => {
+
+      if (data.count > bestCount) {
+        bestCount = data.count;
+        accentColor = color;
+      }
+
+    });
+
+    if (!accentColor) {
+      return "none";
+    }
+
+    const data = colorBuckets[accentColor];
+
+    const r = data.r / data.count;
+    const g = data.g / data.count;
+    const b = data.b / data.count;
+
+    const brightness = (r + g + b) / 3;
+
+    const max = Math.max(r,g,b);
+    const min = Math.min(r,g,b);
+
+    const saturation = max - min;
+
+    if (brightness < 0.25) return "deep";
+
+    if (brightness > 0.72) return "light";
+
+    if (saturation < 0.12) return "muted";
+
+    if (saturation > 0.35) return "vivid";
+
+    return "normal";
   }
 
   function getSharedObjectCount(rowObjects, currentObjects) {
@@ -842,7 +989,7 @@
 
       const { data, error } = await supabaseClient
         .from("submissions")
-        .select("keywords, emotion_keywords, memory_keywords, thought_keywords, mood_keywords, scene_keywords, subject_keywords, uncategorized_keywords, brightness, contrast, warmth, saturation, dark_area, bright_area, objects, dominant_color, color_mood, accent_color, color_palette");
+        .select("keywords, emotion_keywords, memory_keywords, thought_keywords, mood_keywords, scene_keywords, subject_keywords, uncategorized_keywords, brightness, contrast, warmth, saturation, dark_area, bright_area, objects, dominant_color, color_mood, accent_color, color_palette, color_tone, accent_tone");
 
       if (error) {
         console.error(error);
@@ -872,6 +1019,14 @@
 
         if (row.accent_color && row.accent_color !== currentAccentColor) {
           distance += 0.25;
+        }
+
+        if (row.color_tone && row.color_tone !== currentColorTone) {
+          distance += 0.08;
+        }
+
+        if (row.accent_tone && row.accent_tone !== currentAccentTone) {
+          distance += 0.08;
         }
 
         if (row.color_palette && currentColorPalette) {
