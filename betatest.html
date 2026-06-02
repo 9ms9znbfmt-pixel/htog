@@ -394,6 +394,7 @@
 
     submitButton.addEventListener("click", async function () {
       const keywordText = document.getElementById("userKeywords").value.trim();
+      const categorized = categorizeKeywords(keywordText);
 
       if (!selectedFile) {
         submitStatus.textContent = "이미지를 먼저 선택해주세요.";
@@ -446,6 +447,13 @@
           color_mood: currentColorMood,
           accent_color: currentAccentColor,
           color_palette: currentColorPalette,
+          emotion_keywords: categorized.emotion.join(", "),
+          memory_keywords: categorized.memory.join(", "),
+          thought_keywords: categorized.thought.join(", "),
+          mood_keywords: categorized.mood.join(", "),
+          scene_keywords: categorized.scene.join(", "),
+          subject_keywords: categorized.subject.join(", "),
+          uncategorized_keywords: categorized.uncategorized.join(", "),
         })
 
       if (insertError) {
@@ -609,19 +617,6 @@
 
       renderFallbackKeywords(analysis.keywords.slice(0, 3));
 
-      function renderFallbackKeywords(words) {
-        const container = document.getElementById("combinedKeywords");
-        container.innerHTML = "";
-
-        words.slice(0, 3).forEach((word, index) => {
-          const span = document.createElement("span");
-          span.className = "keyword";
-          span.style.animationDelay = `${index * 0.1}s`;
-          span.textContent = word;
-          container.appendChild(span);
-        });
-      }
-
       const metrics = [
         ["brightness", analysis.brightness],
         ["contrast", analysis.contrast],
@@ -649,6 +644,19 @@
       });
     }
 
+    function renderFallbackKeywords(words) {
+            const container = document.getElementById("combinedKeywords");
+            container.innerHTML = "";
+
+            words.slice(0, 3).forEach((word, index) => {
+              const span = document.createElement("span");
+              span.className = "keyword";
+              span.style.animationDelay = `${index * 0.1}s`;
+              span.textContent = word;
+              container.appendChild(span);
+            });
+          }
+
     function renderKeywords(id, words) {
       const container = document.getElementById(id);
       container.innerHTML = "";
@@ -668,6 +676,49 @@
 
     function unique(array) {
       return [...new Set(array)];
+    }
+
+    function categorizeKeywords(keywordText) {
+      const words = keywordText
+        .split(",")
+        .map(word => word.trim())
+        .filter(word => word.length > 0);
+
+      const dictionary = {
+        emotion: ["공허", "외로움", "슬픔", "불안", "설렘", "신남", "평온", "위로", "좌절"],
+        memory: ["추억", "회상", "그리움", "후회", "상실", "기억"],
+        thought: ["기다림", "망설임", "도망", "결심", "체념", "기대"],
+        mood: ["고요", "정적", "시네마틱", "차가움", "따뜻함", "쓸쓸함"],
+        scene: ["축제", "공연", "거리", "여행", "귀가", "밤", "바다", "도시"],
+        subject: ["밴드", "사람", "아이", "연인", "고양이", "강아지", "차", "건물"]
+      };
+
+      const result = {
+        emotion: [],
+        memory: [],
+        thought: [],
+        mood: [],
+        scene: [],
+        subject: [],
+        uncategorized: []
+      };
+
+      words.forEach(word => {
+        let found = false;
+
+        Object.entries(dictionary).forEach(([category, list]) => {
+          if (list.includes(word)) {
+            result[category].push(word);
+            found = true;
+          }
+        });
+
+        if (!found) {
+          result.uncategorized.push(word);
+        }
+      });
+
+      return result;
     }
 
     function getDominantColor(r, g, b) {
@@ -791,7 +842,7 @@
 
       const { data, error } = await supabaseClient
         .from("submissions")
-        .select("keywords, brightness, contrast, warmth, saturation, dark_area, bright_area, objects, dominant_color, color_mood, accent_color, color_palette");
+        .select("keywords, emotion_keywords, memory_keywords, thought_keywords, mood_keywords, scene_keywords, subject_keywords, uncategorized_keywords, brightness, contrast, warmth, saturation, dark_area, bright_area, objects, dominant_color, color_mood, accent_color, color_palette");
 
       if (error) {
         console.error(error);
@@ -843,6 +894,13 @@
 
         similarRows.push({
           keywords: row.keywords,
+          emotion_keywords: row.emotion_keywords,
+          memory_keywords: row.memory_keywords,
+          thought_keywords: row.thought_keywords,
+          mood_keywords: row.mood_keywords,
+          scene_keywords: row.scene_keywords,
+          subject_keywords: row.subject_keywords,
+          uncategorized_keywords: row.uncategorized_keywords,
           distance: distance
         });
       });
@@ -850,6 +908,32 @@
       similarRows.sort((a, b) => a.distance - b.distance);
 
       const mainScores = {};
+
+      function addKeywordScores(row, targetScores, score) {
+        const groups = [
+          { key: "emotion_keywords", weight: 1.4 },
+          { key: "memory_keywords", weight: 1.25 },
+          { key: "thought_keywords", weight: 1.2 },
+          { key: "mood_keywords", weight: 1.1 },
+          { key: "scene_keywords", weight: 0.45 },
+          { key: "subject_keywords", weight: 0.35 },
+          { key: "uncategorized_keywords", weight: 0.7 }
+        ];
+
+        groups.forEach(group => {
+          if (!row[group.key]) return;
+
+          row[group.key]
+            .split(",")
+            .map(k => k.trim())
+            .filter(k => k.length > 0)
+            .forEach(keyword => {
+              targetScores[keyword] =
+                (targetScores[keyword] || 0) + score * group.weight;
+            });
+        });
+      }
+
       const anotherScores = {};
 
       const closeRows = similarRows.slice(0, 5);
@@ -857,28 +941,12 @@
 
       closeRows.forEach(row => {
         const score = 1 / (row.distance + 0.1);
-
-        row.keywords
-          .split(",")
-          .map(k => k.trim())
-          .filter(k => k.length > 0)
-          .forEach(keyword => {
-            mainScores[keyword] =
-              (mainScores[keyword] || 0) + score;
-          });
+        addKeywordScores(row, mainScores, score);
       });
 
       farRows.forEach(row => {
         const score = 1 / (row.distance + 0.1);
-
-        row.keywords
-          .split(",")
-          .map(k => k.trim())
-          .filter(k => k.length > 0)
-          .forEach(keyword => {
-            anotherScores[keyword] =
-              (anotherScores[keyword] || 0) + score;
-          });
+        addKeywordScores(row, anotherScores, score * 0.8);
       });
 
       renderUserBasedKeywords(mainScores, anotherScores);
@@ -930,8 +998,8 @@
 
     function renderObjects(objects) {
       const container = document.getElementById("objectKeywords");
-
       if (!container) return;
+      container.innerHTML = "";
 
 
       if (objects.length === 0) {
@@ -953,50 +1021,6 @@
         container.appendChild(span);
       });
     }
-    function renderCombinedKeywords(surfaceWords, oppositeWords) {
-      const container = document.getElementById("combinedKeywords");
-      container.innerHTML = "";
-
-      const normalWords = unique(surfaceWords).slice(0, 4);
-      const inverseWords = unique(oppositeWords).slice(0, 2);
-
-      normalWords.forEach((word, index) => {
-        const span = document.createElement("span");
-        span.className = "keyword";
-        span.style.animationDelay = `${index * 0.1}s`;
-        span.textContent = word;
-        container.appendChild(span);
-      });
-
-      inverseWords.forEach((word, index) => {
-        const span = document.createElement("span");
-        span.className = "keyword inverse";
-        span.style.animationDelay = `${(normalWords.length + index) * 0.1}s`;
-        span.textContent = word;
-        container.appendChild(span);
-      });
-    }
-  </script>
-  <script type="module">
-    console.log("CLIP test started");
-
-    try {
-      const { pipeline } = await import(
-        "https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2"
-      );
-
-      console.log("Transformers import success");
-
-      window.clipClassifier = await pipeline(
-        "zero-shot-image-classification",
-        "Xenova/clip-vit-base-patch32"
-      );
-
-      console.log("CLIP model loaded");
-    } catch (error) {
-      console.error("CLIP test failed:", error);
-    }
   </script>
 </body>
-
 </html>
