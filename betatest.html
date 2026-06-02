@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>BetaTest</title>
+  <title>BetaTest V2.0</title>
 
   <style>
     * {
@@ -145,6 +145,12 @@
       gap: 10px;
     }
 
+    .keyword.inverse {
+      background: #e8e2d8;
+      color: #0d0d0d;
+      font-style: italic;
+    }
+
     .keyword {
       border: 1px solid rgba(232, 226, 216, 0.22);
       padding: 6px 12px;
@@ -253,6 +259,12 @@
       .analysis {
         position: static;
       }
+
+      .keyword.inverse {
+        background: #e8e2d8;
+        color: #0d0d0d;
+        border-color: #e8e2d8;
+      }
     }
   </style>
 </head>
@@ -270,7 +282,7 @@
   <main>
     <section class="intro">
       <div class="label">Project / BetaTest</div>
-      <h1>BetaTest</h1>
+      <h1>BetaTest <span style="font-size: 55%;">V2.0</span></h1>
       <p class="subtitle">
         Upload a photograph. The page reads its light, color, and shadow,
         then offers words that may begin another conversation.
@@ -285,35 +297,20 @@
     </section>
 
     <section class="project">
-      <div class="photo-wrap">
-        <div class="empty-text" id="emptyText">No image yet</div>
-        <img id="preview" alt="Uploaded photograph" />
-      </div>
-
-      <div class="section">
-        <div class="section-title">Objects</div>
-        <div class="keywords" id="objectKeywords"></div>
-      </div>
-
-      <div class="section">
-        <div class="section-title">Caption</div>
-        <div class="metrics" id="captionText">No caption yet</div>
-      </div>
-
-      <div class="section">
-        <div class="section-title">Previous Readings</div>
-        <div class="keywords" id="similarKeywords"></div>
-      </div>
-
       <aside class="analysis">
-        <div class="section">
-          <div class="section-title">Surface</div>
-          <div class="keywords" id="surfaceKeywords"></div>
+        <div class="photo-wrap">
+          <div class="empty-text" id="emptyText">No image yet</div>
+          <img id="preview" alt="Uploaded photograph" />
         </div>
 
-        <div class="section opposite">
-          <div class="section-title">Underneath</div>
-          <div class="keywords" id="oppositeKeywords"></div>
+        <div class="section">
+          <div class="section-title">Objects</div>
+          <div class="keywords" id="objectKeywords"></div>
+        </div>
+
+        <div class="section">
+          <div class="section-title">Keywords</div>
+          <div class="keywords" id="combinedKeywords"></div>
         </div>
 
         <div class="section">
@@ -367,6 +364,7 @@
     let currentDominantColor = "";
     let currentColorMood = "";
     let currentAccentColor = "";
+    let currentColorPalette = "";
 
     async function loadCocoModel() {
       submitStatus.textContent = "AI 모델 로딩 중...";
@@ -449,6 +447,7 @@
           dominant_color: currentDominantColor,
           color_mood: currentColorMood,
           accent_color: currentAccentColor,
+          color_palette: currentColorPalette,
         })
 
       if (insertError) {
@@ -485,6 +484,8 @@
       let bSum = 0;
 
       const colorBuckets = {
+        black: 0,
+        white: 0,
         red: 0,
         orange: 0,
         yellow: 0,
@@ -537,10 +538,12 @@
       const dominantColor = getDominantColor(avgR, avgG, avgB);
       const colorMood = getColorMood(brightness, saturation, warmth, contrast);
       const accentColor = getAccentColor(colorBuckets, totalPixels);
+      const colorPalette = getColorPalette(colorBuckets, totalPixels);
 
       currentDominantColor = dominantColor;
       currentColorMood = colorMood;
       currentAccentColor = accentColor;
+      currentColorPalette = colorPalette;
 
       const analysis = {
         brightness,
@@ -554,6 +557,7 @@
         dominant_color: dominantColor,
         color_mood: colorMood,
         accent_color: accentColor,
+        color_palette: colorPalette,
       };
 
       currentAnalysis = analysis;
@@ -580,7 +584,7 @@
 
       if (words.length === 0) words.push("trace", "ordinary", "moment");
 
-      return unique(words).slice(0, 6);
+      return unique(words).slice(0, 3);
     }
 
     function getOppositeKeywords(brightness, contrast, warmth, saturation, darkArea, brightArea) {
@@ -604,8 +608,21 @@
     }
 
     function renderAnalysis(analysis) {
-      renderKeywords("surfaceKeywords", analysis.keywords);
-      renderKeywords("oppositeKeywords", analysis.opposite_keywords);
+
+      renderFallbackKeywords(analysis.keywords.slice(0, 3));
+
+      function renderFallbackKeywords(words) {
+        const container = document.getElementById("combinedKeywords");
+        container.innerHTML = "";
+
+        words.slice(0, 3).forEach((word, index) => {
+          const span = document.createElement("span");
+          span.className = "keyword";
+          span.style.animationDelay = `${index * 0.1}s`;
+          span.textContent = word;
+          container.appendChild(span);
+        });
+      }
 
       const metrics = [
         ["brightness", analysis.brightness],
@@ -616,7 +633,8 @@
         ["bright area", analysis.bright_area],
         ["dominant color", analysis.dominant_color],
         ["color mood", analysis.color_mood],
-        ["accent color", analysis.accent_color]
+        ["accent color", analysis.accent_color],
+        ["color palette", analysis.color_palette],
       ];
 
       const metricsContainer = document.getElementById("metrics");
@@ -691,16 +709,20 @@
   function detectPixelColor(r, g, b) {
     const max = Math.max(r, g, b);
     const min = Math.min(r, g, b);
+    const brightness = (r + g + b) / 3;
     const saturation = max - min;
 
-    if (saturation < 0.25 || max < 0.25) return null;
+    if (brightness < 0.18) return "black";
+    if (brightness > 0.82 && saturation < 0.12) return "white";
 
-    if (r > 0.55 && g < 0.45 && b < 0.45) return "red";
-    if (r > 0.55 && g > 0.32 && b < 0.25) return "orange";
-    if (r > 0.55 && g > 0.55 && b < 0.35) return "yellow";
-    if (g > 0.5 && r < 0.45 && b < 0.45) return "green";
-    if (b > 0.5 && r < 0.45 && g < 0.55) return "blue";
-    if (r > 0.45 && b > 0.45 && g < 0.35) return "purple";
+    if (saturation < 0.08) return null;
+
+    if (r > 0.45 && g < 0.38 && b < 0.38) return "red";
+    if (r > 0.42 && g > 0.20 && g < 0.55 && b < 0.28) return "orange";
+    if (r > 0.50 && g > 0.45 && b < 0.35) return "yellow";
+    if (g > 0.38 && r < 0.45 && b < 0.45) return "green";
+    if (b > 0.35 && r < 0.45 && g < 0.55) return "blue";
+    if (r > 0.35 && b > 0.35 && g < 0.35) return "purple";
 
     return null;
   }
@@ -718,9 +740,38 @@
 
     const ratio = bestCount / totalPixels;
 
-    if (ratio < 0.015) return "none";
-
+    if (ratio < 0.005) return "none";
     return bestColor;
+  }
+
+  function getColorPalette(colorBuckets, totalPixels) {
+    const minRatio = 0.005;
+
+    return Object.entries(colorBuckets)
+      .map(([color, count]) => ({
+        color,
+        ratio: count / totalPixels
+      }))
+      .filter(item => item.ratio >= minRatio)
+      .sort((a, b) => b.ratio - a.ratio)
+      .slice(0, 3)
+      .map(item => item.color)
+      .join(", ");
+  }
+
+  function getSharedObjectCount(rowObjects, currentObjects) {
+    if (!rowObjects || !currentObjects || currentObjects.length === 0) {
+      return 0;
+    }
+
+    const rowObjectList = rowObjects
+      .split(",")
+      .map(item => item.trim())
+      .filter(item => item.length > 0);
+
+    return currentObjects.filter(object =>
+      rowObjectList.includes(object)
+    ).length;
   }
 
     async function detectObjects(img) {
@@ -742,7 +793,7 @@
 
       const { data, error } = await supabaseClient
         .from("submissions")
-        .select("keywords, brightness, contrast, warmth, saturation, dark_area, bright_area, objects, dominant_color, color_mood, accent_color");
+        .select("keywords, brightness, contrast, warmth, saturation, dark_area, bright_area, objects, dominant_color, color_mood, accent_color, color_palette");
 
       if (error) {
         console.error(error);
@@ -774,6 +825,24 @@
           distance += 0.25;
         }
 
+        if (row.color_palette && currentColorPalette) {
+          const rowPalette = row.color_palette.split(",").map(c => c.trim());
+          const currentPalette = currentColorPalette.split(",").map(c => c.trim());
+
+          const sharedColors = currentPalette.filter(color =>
+            rowPalette.includes(color)
+          );
+
+          distance -= sharedColors.length * 0.1;
+        }
+
+        const sharedObjectCount =
+          getSharedObjectCount(row.objects, currentObjects);
+
+        distance -= sharedObjectCount * 0.25;
+
+        if (distance > 1.8) return;
+
         similarRows.push({
           keywords: row.keywords,
           distance: distance
@@ -782,18 +851,39 @@
 
       similarRows.sort((a, b) => a.distance - b.distance);
 
-      const collectedKeywords = [];
+      const mainScores = {};
+      const anotherScores = {};
 
-      similarRows.slice(0, 5).forEach(row => {
-        collectedKeywords.push(
-          ...row.keywords
-            .split(",")
-            .map(k => k.trim())
-            .filter(k => k.length > 0)
-        );
+      const closeRows = similarRows.slice(0, 5);
+      const farRows = similarRows.slice(-5);
+
+      closeRows.forEach(row => {
+        const score = 1 / (row.distance + 0.1);
+
+        row.keywords
+          .split(",")
+          .map(k => k.trim())
+          .filter(k => k.length > 0)
+          .forEach(keyword => {
+            mainScores[keyword] =
+              (mainScores[keyword] || 0) + score;
+          });
       });
 
-      renderSimilarKeywords(collectedKeywords);
+      farRows.forEach(row => {
+        const score = 1 / (row.distance + 0.1);
+
+        row.keywords
+          .split(",")
+          .map(k => k.trim())
+          .filter(k => k.length > 0)
+          .forEach(keyword => {
+            anotherScores[keyword] =
+              (anotherScores[keyword] || 0) + score;
+          });
+      });
+
+      renderUserBasedKeywords(mainScores, anotherScores);
     }
 
     preview.addEventListener("load", async function () {
@@ -801,60 +891,43 @@
       await detectObjects(preview);
 
       await findSimilarReadings();
-
-      if (window.captionerReady && window.generateCaption) {
-        currentCaption = await window.generateCaption(preview);
-      } else {
-        document.getElementById("captionText").textContent =
-          "Caption unavailable";
-      }
     });
 
-    function renderSimilarKeywords(words) {
-
-      const container =
-        document.getElementById("similarKeywords");
-
+    function renderUserBasedKeywords(mainScores, anotherScores) {
+      const container = document.getElementById("combinedKeywords");
       container.innerHTML = "";
 
-      if (words.length === 0) {
+      const mainWords = Object.entries(mainScores)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 4)
+        .map(([word]) => word);
 
-        container.innerHTML =
-          '<span class="keyword">No previous readings</span>';
+      const anotherWords = Object.entries(anotherScores)
+        .sort((a, b) => b[1] - a[1])
+        .map(([word]) => word)
+        .filter(word => !mainWords.includes(word))
+        .slice(0, 2);
 
+      if (mainWords.length === 0) {
+        renderFallbackKeywords(currentAnalysis.keywords.slice(0, 3));
         return;
       }
 
-      const counts = {};
-
-      words.forEach(word => {
-
-        counts[word] =
-          (counts[word] || 0) + 1;
-
-      });
-
-      const sortedWords =
-        Object.entries(counts)
-          .sort((a,b) => b[1] - a[1])
-          .slice(0,10);
-
-      sortedWords.forEach(([word], index) => {
-
-        const span =
-          document.createElement("span");
-
+      mainWords.forEach((word, index) => {
+        const span = document.createElement("span");
         span.className = "keyword";
-
-        span.style.animationDelay =
-          `${index * 0.1}s`;
-
+        span.style.animationDelay = `${index * 0.1}s`;
         span.textContent = word;
-
         container.appendChild(span);
-
       });
 
+      anotherWords.forEach((word, index) => {
+        const span = document.createElement("span");
+        span.className = "keyword inverse";
+        span.style.animationDelay = `${(mainWords.length + index) * 0.1}s`;
+        span.textContent = word;
+        container.appendChild(span);
+      });
     }
 
     function renderObjects(objects) {
@@ -862,7 +935,6 @@
 
       if (!container) return;
 
-      container.innerHTML = "";
 
       if (objects.length === 0) {
         container.innerHTML =
@@ -882,44 +954,28 @@
         container.appendChild(span);
       });
     }
-  </script>
+    function renderCombinedKeywords(surfaceWords, oppositeWords) {
+      const container = document.getElementById("combinedKeywords");
+      container.innerHTML = "";
 
-  <script type="module">
-    console.log("module script started");
+      const normalWords = unique(surfaceWords).slice(0, 4);
+      const inverseWords = unique(oppositeWords).slice(0, 2);
 
-    import { pipeline } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2';
+      normalWords.forEach((word, index) => {
+        const span = document.createElement("span");
+        span.className = "keyword";
+        span.style.animationDelay = `${index * 0.1}s`;
+        span.textContent = word;
+        container.appendChild(span);
+      });
 
-    const captionBox = document.getElementById("captionText");
-    const statusBox = document.getElementById("submitStatus");
-
-    window.captionerReady = false;
-
-    try {
-      statusBox.textContent = "캡션 모델 로딩 중...";
-
-      window.captioner = await pipeline(
-        "image-to-text",
-        "Xenova/vit-gpt2-image-captioning"
-      );
-
-      window.captionerReady = true;
-      statusBox.textContent = "캡션 모델 준비 완료.";
-      console.log("caption model loaded");
-
-      window.generateCaption = async function (imageElement) {
-        captionBox.textContent = "Caption generating...";
-
-        const result = await window.captioner(imageElement.src);
-        const caption = result?.[0]?.generated_text || "";
-
-        captionBox.textContent = caption || "No caption generated";
-
-        return caption;
-      };
-    } catch (error) {
-      console.error("caption model load failed:", error);
-      statusBox.textContent = "캡션 모델 로딩 실패: " + error.message;
-      captionBox.textContent = "Caption unavailable";
+      inverseWords.forEach((word, index) => {
+        const span = document.createElement("span");
+        span.className = "keyword inverse";
+        span.style.animationDelay = `${(normalWords.length + index) * 0.1}s`;
+        span.textContent = word;
+        container.appendChild(span);
+      });
     }
   </script>
 </body>
