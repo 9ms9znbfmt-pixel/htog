@@ -341,8 +341,8 @@
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.21.0"></script>
-<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.3"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.21.0"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.3"></script>
 
   <script>
     const supabaseUrl = "https://zyuzdpbwhbadqdnegjcv.supabase.co";
@@ -360,7 +360,6 @@
     let currentAnalysis = null;
     let currentObjects = [];
     let cocoModel = null;
-    let currentCaption = "";
     let currentDominantColor = "";
     let currentColorMood = "";
     let currentAccentColor = "";
@@ -435,7 +434,6 @@
         .from("submissions")
         .insert({
           image_url: urlData.publicUrl,
-          caption: currentCaption,
           keywords: keywordText,
           objects: currentObjects.join(", "),
           brightness: currentAnalysis.brightness,
@@ -604,7 +602,7 @@
 
       if (words.length === 0) words.push("distance", "memory", "afterimage");
 
-      return unique(words).slice(0, 5);
+      return unique(words).slice(0, 7);
     }
 
     function renderAnalysis(analysis) {
@@ -938,7 +936,8 @@
 
       if (objects.length === 0) {
         container.innerHTML =
-          '<span class="keyword">unknown</span>';
+          '<span class="keyword">landscape</span>';
+        currentObjects = ["landscape"];
         return;
       }
 
@@ -978,5 +977,26 @@
       });
     }
   </script>
+  <script type="module">
+  console.log("CLIP test started");
+
+  try {
+    const { pipeline } = await import(
+      "https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2"
+    );
+
+    console.log("Transformers import success");
+
+    window.clipClassifier = await pipeline(
+      "zero-shot-image-classification",
+      "Xenova/clip-vit-base-patch32"
+    );
+
+    console.log("CLIP model loaded");
+  } catch (error) {
+    console.error("CLIP test failed:", error);
+  }
+</script>
 </body>
+
 </html>
