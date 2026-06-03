@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>BetaTest V2.0</title>
+  <title>BetaTest V2.1</title>
 
   <style>
     * {
@@ -282,7 +282,7 @@
   <main>
     <section class="intro">
       <div class="label">Project / BetaTest</div>
-      <h1>BetaTest <span style="font-size: 55%;">V2.0</span></h1>
+      <h1>BetaTest <span style="font-size: 55%;">v2.1</span></h1>
       <p class="subtitle">
         Upload a photograph. The page reads its light, color, and shadow,
         then offers words that may begin another conversation.
@@ -366,6 +366,9 @@
     let currentColorPalette = "";
     let currentColorTone = "";
     let currentAccentTone = "";
+    let currentObjectCounts = {};
+    let currentInferredSubjects = [];
+    
 
     async function loadCocoModel() {
       submitStatus.textContent = "AI 모델 로딩 중...";
@@ -397,6 +400,7 @@
     submitButton.addEventListener("click", async function () {
       const keywordText = document.getElementById("userKeywords").value.trim();
       const categorized = categorizeKeywords(keywordText);
+      const submittedAt = new Date().toLocaleString("ko-KR");
 
       if (!selectedFile) {
         submitStatus.textContent = "이미지를 먼저 선택해주세요.";
@@ -438,7 +442,7 @@
         .insert({
           image_url: urlData.publicUrl,
           keywords: keywordText,
-          objects: currentObjects.join(", "),
+          objects: [...currentObjects, ...currentInferredSubjects].join(", "),
           brightness: currentAnalysis.brightness,
           contrast: currentAnalysis.contrast,
           warmth: currentAnalysis.warmth,
@@ -449,6 +453,8 @@
           color_mood: currentColorMood,
           accent_color: currentAccentColor,
           color_palette: currentColorPalette,
+          color_tone: currentColorTone,
+          accent_tone: currentAccentTone,
           emotion_keywords: categorized.emotion.join(", "),
           memory_keywords: categorized.memory.join(", "),
           thought_keywords: categorized.thought.join(", "),
@@ -456,6 +462,7 @@
           scene_keywords: categorized.scene.join(", "),
           subject_keywords: categorized.subject.join(", "),
           uncategorized_keywords: categorized.uncategorized.join(", "),
+          created_at: submittedAt,
         })
 
       if (insertError) {
@@ -518,12 +525,19 @@
         bSum += b;
 
         const detectedColor = detectPixelColor(r, g, b);
-        if (detectedColor) {
-          colorBuckets[detectedColor].count++;
 
-          colorBuckets[detectedColor].r += r;
-          colorBuckets[detectedColor].g += g;
-          colorBuckets[detectedColor].b += b;
+        if (detectedColor) {
+          const tone = getColorToneFromRGB(r, g, b);
+          const key = `${detectedColor}:${tone}`;
+
+          if (!colorBuckets[key]) {
+            colorBuckets[key] = { count: 0, r: 0, g: 0, b: 0 };
+          }
+
+          colorBuckets[key].count++;
+          colorBuckets[key].r += r;
+          colorBuckets[key].g += g;
+          colorBuckets[key].b += b;
         }
 
         const brightness = (r + g + b) / 3;
@@ -741,46 +755,28 @@
       return result;
     }
 
-    function getDominantColor(r, g, b) {
-      const max = Math.max(r, g, b);
-      const min = Math.min(r, g, b);
-
-      if (max - min < 0.08) return "monochrome";
-
-      if (r > g && r > b) {
-        if (g > b) return "orange";
-        return "red";
-      }
-
-      if (g > r && g > b) {
-        if (r > b) return "yellow-green";
-        return "green";
-      }
-
-      if (b > r && b > g) {
-        if (r > g) return "purple-blue";
-        return "blue";
-      }
-
-      return "neutral";
-    }
-
     function getDominantColorFromBuckets(colorBuckets, totalPixels) {
-      let bestColor = "monochrome";
+      let bestKey = "monochrome";
       let bestCount = 0;
 
-      Object.entries(colorBuckets).forEach(([color, data]) => {
+      Object.entries(colorBuckets).forEach(([key, data]) => {
+        const baseColor = key.split(":")[0];
+
+        if (["black", "white", "gray"].includes(baseColor)) {
+          return;
+        }
+
         if (data.count > bestCount) {
-          bestColor = color;
+          bestKey = key;
           bestCount = data.count;
         }
       });
 
-      if (bestCount / totalPixels < 0.005) {
+      if (bestCount / totalPixels < 0.002) {
         return "monochrome";
       }
 
-      return bestColor;
+      return bestKey.split(":")[0];
     }
 
   function getColorMood(brightness, saturation, warmth, contrast) {
@@ -852,7 +848,7 @@
     if (r > 0.50 && g > 0.45 && b < 0.40) return "yellow";
     if (g > 0.36 && r < 0.52 && b < 0.52) return "green";
     if (b > 0.34 && r < 0.52 && g < 0.64) return "blue";
-    if (r > 0.34 && b > 0.34 && g < 0.44) return "purple";
+    if (r > 0.30 && b > 0.30 && g < 0.25) return "purple";
 
     return null;
   }
@@ -876,26 +872,17 @@
   }
 
   function getColorPalette(colorBuckets, totalPixels) {
-    const minRatio = 0.005;
+    const minRatio = 0.002;
 
     return Object.entries(colorBuckets)
-      .map(([color, data]) => {
-        if (data.count === 0) return null;
-
-        const avgR = data.r / data.count;
-        const avgG = data.g / data.count;
-        const avgB = data.b / data.count;
-
-        return {
-          color,
-          tone: getColorToneFromRGB(avgR, avgG, avgB),
-          ratio: data.count / totalPixels
-        };
-      })
-      .filter(item => item && item.ratio >= minRatio)
+      .map(([key, data]) => ({
+        key,
+        ratio: data.count / totalPixels
+      }))
+      .filter(item => item.ratio >= minRatio)
       .sort((a, b) => b.ratio - a.ratio)
-      .slice(0, 3)
-      .map(item => `${item.color}:${item.tone}`)
+      .slice(0, 6)
+      .map(item => `${item.key}:${item.ratio.toFixed(3)}`)
       .join(", ");
   }
 
@@ -914,45 +901,21 @@
   }
 
   function getAccentTone(colorBuckets, totalPixels) {
-
-    let accentColor = null;
+    let bestKey = null;
     let bestCount = 0;
 
-    Object.entries(colorBuckets).forEach(([color,data]) => {
-
+    Object.entries(colorBuckets).forEach(([key, data]) => {
       if (data.count > bestCount) {
+        bestKey = key;
         bestCount = data.count;
-        accentColor = color;
       }
-
     });
 
-    if (!accentColor) {
+    if (!bestKey || bestCount / totalPixels < 0.005) {
       return "none";
     }
 
-    const data = colorBuckets[accentColor];
-
-    const r = data.r / data.count;
-    const g = data.g / data.count;
-    const b = data.b / data.count;
-
-    const brightness = (r + g + b) / 3;
-
-    const max = Math.max(r,g,b);
-    const min = Math.min(r,g,b);
-
-    const saturation = max - min;
-
-    if (brightness < 0.25) return "deep";
-
-    if (brightness > 0.72) return "light";
-
-    if (saturation < 0.12) return "muted";
-
-    if (saturation > 0.35) return "vivid";
-
-    return "normal";
+    return bestKey.split(":")[1] || "normal";
   }
 
   function getSharedObjectCount(rowObjects, currentObjects) {
@@ -970,19 +933,109 @@
     ).length;
   }
 
-    async function detectObjects(img) {
-      if (!cocoModel) return;
+  async function detectObjects(img) {
+    if (!cocoModel) return;
 
-      const predictions = await cocoModel.detect(img);
+    const allPredictions = [];
 
-      currentObjects = predictions
-        .filter(item => item.score > 0.45)
-        .map(item => item.class);
+    const originalPredictions = await cocoModel.detect(img);
+    allPredictions.push(...originalPredictions);
 
-      currentObjects = unique(currentObjects);
+    const crops = createImageCrops(img);
 
-      renderObjects(currentObjects);
+    for (const crop of crops) {
+      const cropPredictions = await cocoModel.detect(crop);
+      allPredictions.push(...cropPredictions);
     }
+
+    const filtered = allPredictions.filter(item => item.score > 0.45);
+
+    currentObjectCounts = {};
+
+    filtered.forEach(item => {
+      currentObjectCounts[item.class] =
+        (currentObjectCounts[item.class] || 0) + 1;
+    });
+
+    currentObjects = unique(filtered.map(item => item.class));
+
+    if (currentObjects.length === 0) {
+      currentObjects = ["distant scene"];
+    }
+
+    currentInferredSubjects = inferSubjects(currentObjectCounts);
+
+    renderObjects([
+      ...currentObjects,
+      ...currentInferredSubjects
+    ]);
+  }
+  
+  function createImageCrops(img) {
+    const crops = [];
+
+    const sourceWidth = img.naturalWidth;
+    const sourceHeight = img.naturalHeight;
+
+    const cropAreas = [
+      { x: 0, y: 0, w: sourceWidth / 2, h: sourceHeight / 2 },
+      { x: sourceWidth / 2, y: 0, w: sourceWidth / 2, h: sourceHeight / 2 },
+      { x: 0, y: sourceHeight / 2, w: sourceWidth / 2, h: sourceHeight / 2 },
+      { x: sourceWidth / 2, y: sourceHeight / 2, w: sourceWidth / 2, h: sourceHeight / 2 }
+    ];
+
+    cropAreas.forEach(area => {
+      const cropCanvas = document.createElement("canvas");
+      cropCanvas.width = 640;
+      cropCanvas.height = 640;
+
+      const cropCtx = cropCanvas.getContext("2d");
+
+      cropCtx.drawImage(
+        img,
+        area.x,
+        area.y,
+        area.w,
+        area.h,
+        0,
+        0,
+        cropCanvas.width,
+        cropCanvas.height
+      );
+
+      crops.push(cropCanvas);
+    });
+
+    return crops;
+  }
+
+  function inferSubjects(counts) {
+    const results = [];
+
+    const personCount = counts.person || 0;
+
+    if (personCount === 1) {
+      results.push("single person");
+    }
+
+    if (personCount === 2) {
+      results.push("two people");
+    }
+
+    if (personCount >= 3 && personCount < 8) {
+      results.push("group");
+    }
+
+    if (personCount >= 8) {
+      results.push("crowd");
+    }
+
+    if (personCount === 2 && counts.bench) {
+      results.push("intimate scene");
+    }
+
+    return results;
+  }
 
     async function findSimilarReadings() {
       if (!currentAnalysis) return;
