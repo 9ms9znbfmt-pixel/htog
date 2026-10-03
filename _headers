@@ -1,2 +1,0 @@
-/*
-  Content-Security-Policy: default-src * data: blob: 'unsafe-inline' 'unsafe-eval'; script-src * data: blob: 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval'; connect-src * data: blob:; img-src * data: blob:; style-src * 'unsafe-inline'; worker-src * blob:;
