@@ -595,3 +595,29 @@ html{scrollbar-gutter:stable}body{background:var(--bg)}
 .viewer{position:fixed;inset:0;z-index:9999;background:rgba(15,14,13,.96);display:none;touch-action:none;overflow:hidden;cursor:zoom-out;outline:none}.viewer.open{display:block}.viewer img{position:absolute;left:50%;top:50%;max-width:94vw;max-height:90vh;max-height:90dvh;width:auto;height:auto;user-select:none;-webkit-user-drag:none;transform-origin:center;cursor:grab}.viewer img:active{cursor:grabbing}body.viewer-open{position:fixed;width:100%;overflow:hidden}
 a:focus-visible{outline:1px solid var(--muted);outline-offset:6px}
 @media(max-width:720px){.top{padding:25px 0;align-items:baseline;gap:14px}.top-brand{font-size:29px}.top-links{gap:13px;font-size:11px;flex-wrap:wrap;justify-content:flex-end}.home>.top{margin:0 20px}.intro-home{margin:10vh 20px 7vh}.intro-home h1{font-size:52px}.photo-sequence{gap:95px;padding-bottom:90px}.photo.landscape{width:calc(100% - 32px);margin-left:16px}.photo.portrait{width:74vw}.photo-2,.photo-7{margin-left:21vw}.photo-5{margin-left:5vw}.home-footer{padding:0 20px 28px;display:block}.home-footer p{margin-bottom:26px}.thumbs{grid-template-columns:1fr;gap:55px;padding:45px 0}.thumb.wide{grid-column:auto}.page-projects-card .projects-grid{grid-template-columns:1fr;gap:65px}.page-projects-card .project-thumb img{max-height:none}.page-selected-card .selected,.page-selected-card .selected.is-landscape{grid-template-columns:1fr;padding:40px 0;gap:25px}.page-selected-card .selected-meta{padding-top:0}.page-about-card .about-body{font-size:15px}.viewer img{max-width:94vw;max-height:88dvh}}
+
+/* Keep each photograph fully visible on desktop, including short screens. */
+@media (min-width: 721px) {
+  .photo img,
+  .page-selected-card .selected-media img {
+    width: auto;
+    height: auto;
+    max-width: 100%;
+    max-height: 78vh;
+    max-height: 78svh;
+    object-fit: contain;
+  }
+  .photo-2 img,
+  .photo-7 img {
+    margin-left: auto;
+  }
+  .thumb img {
+    width: auto;
+    height: auto;
+    max-width: 100%;
+    max-height: 78vh;
+    max-height: 78svh;
+    margin-inline: auto;
+    object-fit: contain;
+  }
+}
