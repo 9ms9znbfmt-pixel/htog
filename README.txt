@@ -16,3 +16,15 @@ media/: 사진 원본
 Netlify에는 압축을 푼 폴더 전체를 업로드하세요.
 사진을 누르면 확대됩니다. ESC 또는 빈 공간 클릭으로 닫습니다.
 기존 BetaTest 실험 페이지는 이 새 포트폴리오에 포함하지 않았습니다.
+
+수정하기 쉬운 코드 정리 버전
+
+모든 HTML, CSS, JavaScript 파일에 2칸 들여쓰기와 줄바꿈을 적용했습니다.
+
+사진 / 문구 수정: 각 HTML 파일에서 파일명이나 문구를 검색하세요.
+배경과 글자 색상: style.css 맨 위 :root의 --bg, --text, --muted
+사진 최대 높이: style.css의 .picture img, .hero-image .picture img
+모바일 디자인: style.css 하단 @media (max-width: 720px)
+사진 확대 기능: viewer.js
+
+기존 파일명과 폴더 구조를 유지했습니다. 수정한 파일만 같은 위치에 덮어써도 됩니다.
