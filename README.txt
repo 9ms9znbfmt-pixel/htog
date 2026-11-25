@@ -1,30 +1,24 @@
-HtoG — What Remains
+HtoG — 홈 사진 추가 버전
 
-완전히 새로 구성한 차콜 배경의 사진 포트폴리오입니다.
+사진 추가 방법
+1. media 폴더에 사진 파일을 넣습니다.
+2. gallery.js를 텍스트 편집기로 엽니다.
+3. src: "" 를 src: "media/classic-01.jpg"처럼 바꿉니다.
+   파일 이름의 대소문자와 확장자를 정확히 맞춰주세요.
+4. title은 사진 아래 제목, alt는 사진 내용을 설명하는 문장입니다.
+5. 사진을 더 추가하려면 배열 안의 항목 하나를 복사합니다.
+   layout: "detail"은 두 열, "opening"은 넓은 왼쪽,
+   "closing"은 넓은 오른쪽 배치입니다. 모바일에서는 한 열입니다.
 
-index.html: Selected / 첫 화면과 선별 사진
-projects.html: 프로젝트 목록
-today-light.html: 오늘의 빛
-solitude.html: 고독
-notes.html: 기존 10 Questions 원문
-about.html: 기존 소개 원문
-style.css: 디자인
-viewer.js: 전체 화면 확대, 휠/핀치 줌, 드래그
-media/: 사진 원본
+현재 클래식카쇼 사진이 제공되지 않아 네 개의 빈 사진 자리를 표시합니다.
+사진을 지정하면 빈 자리는 자동으로 실제 사진으로 바뀝니다.
+사진은 자르거나 늘리지 않고 원래 비율로 표시합니다.
+사진 클릭 시 확대 뷰어가 열립니다. ESC 또는 바깥 영역 클릭으로 닫습니다.
 
-압축을 풀고 index.html을 브라우저로 열면 됩니다.
-Netlify에는 압축을 푼 폴더 전체를 업로드하세요.
-사진을 누르면 확대됩니다. ESC 또는 빈 공간 클릭으로 닫습니다.
-기존 BetaTest 실험 페이지는 이 새 포트폴리오에 포함하지 않았습니다.
+홈 제목/소개: index.html의 collection-title 및 바로 아래 문장
+디자인: style.css 맨 아래의 .car-collection부터
+첫 화면 사진: index.html의 media/L.JPG (두 곳)
 
-수정하기 쉬운 코드 정리 버전
-
-모든 HTML, CSS, JavaScript 파일에 2칸 들여쓰기와 줄바꿈을 적용했습니다.
-
-사진 / 문구 수정: 각 HTML 파일에서 파일명이나 문구를 검색하세요.
-배경과 글자 색상: style.css 맨 위 :root의 --bg, --text, --muted
-사진 최대 높이: style.css의 .picture img, .hero-image .picture img
-모바일 디자인: style.css 하단 @media (max-width: 720px)
-사진 확대 기능: viewer.js
-
-기존 파일명과 폴더 구조를 유지했습니다. 수정한 파일만 같은 위치에 덮어써도 됩니다.
+index.html의 이전 숨김 갤러리 및 프로젝트 주석 블록은 삭제했습니다.
+배포 시 이 폴더의 index.html, style.css, gallery.js, viewer.js와
+나머지 페이지 및 media 폴더를 함께 올려주세요.
