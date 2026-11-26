@@ -1,0 +1,27 @@
+.about-bilingual { align-items: start; }
+.about-topline { display: flex; justify-content: space-between; align-items: center; gap: 24px; margin-bottom: 30px; }
+.about-topline .eyebrow { margin: 0; font-size: 11px; }
+.language-switch { display: flex; gap: 6px; flex-shrink: 0; }
+.language-switch a { color: var(--muted); font-size: 12px; letter-spacing: 0.08em; padding: 7px 10px; border-bottom: 1px solid transparent; }
+.language-switch a[aria-current="page"] { color: var(--text); border-color: var(--text); }
+.language-switch a:hover { color: var(--text); }
+.about-bilingual .about-text { max-width: 62ch; }
+.about-bilingual .about-text p + p { margin-top: 25px; }
+.about-bilingual .about-lead { max-width: 50ch; }
+.about-contact { margin-top: 60px; border-top: 1px solid var(--line); padding-top: 26px; }
+.about-contact h2 { font: 26px/1.3 Georgia, serif; letter-spacing: -0.02em; margin-bottom: 24px; }
+.contact-links { display: grid; }
+.contact-links a { display: flex; justify-content: space-between; gap: 20px; align-items: center; padding: 16px 0; border-bottom: 1px solid var(--line); color: var(--muted); font-size: 14px; overflow-wrap: anywhere; }
+.contact-links a:hover { color: var(--text); }
+.contact-links a span:last-child { flex-shrink: 0; }
+html[lang="ko"] .about-bilingual h1 { font-family: "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; font-size: clamp(48px, 6vw, 82px); letter-spacing: -0.06em; }
+@media (max-width: 720px) {
+ .about-bilingual { gap: 42px; }
+ .about-bilingual .about-copy { width: 100%; min-width: 0; }
+ .about-topline { gap: 12px; margin-bottom: 25px; }
+ .about-topline .eyebrow { letter-spacing: 0.09em; }
+ .about-contact { margin-top: 44px; }
+ html[lang="ko"] .about-bilingual h1 { font-size: 58px; }
+}
+
+.contact-pending { display: block; padding: 16px 0; border-bottom: 1px solid var(--line); color: var(--muted); font-size: 14px; }

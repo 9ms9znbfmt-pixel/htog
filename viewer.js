@@ -148,3 +148,12 @@
   });
   window.addEventListener("resize", reset);
 })();
+
+(() => {
+  if (document.getElementById("htog-footer-script")) return;
+  const source = document.currentScript?.src || document.baseURI;
+  const script = document.createElement("script");
+  script.id = "htog-footer-script";
+  script.src = new URL("footer.js?v=20261126-1", source).href;
+  document.body.append(script);
+})();

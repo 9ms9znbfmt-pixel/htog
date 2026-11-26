@@ -1,34 +1,21 @@
-HtoG — 두 시리즈 가로 슬라이드
+HtoG 공통 푸터 업데이트
 
-시리즈: Classic Car Show / Japan, in passing
+압축 안의 viewer.js, footer.js, footer.css를 사이트의 index.html과 같은 폴더에 넣으세요.
+viewer.js는 기존 파일을 교체하고 나머지 두 파일은 추가합니다.
+모든 페이지에서 사용하던 viewer.js가 공통 푸터를 자동으로 불러옵니다.
+기존 HTML, style.css, gallery.js, 사진 파일을 바꿀 필요가 없습니다.
+About에 있던 별도 연락처 영역은 자동으로 제거됩니다.
 
-사진 넣기
-1. 사진을 media 폴더에 넣습니다.
-2. gallery.js의 collections에서 원하는 시리즈를 찾습니다.
-3. photos 안의 src, title, alt를 수정합니다.
-   예:
-   {
-     src: "media/japan-01.jpg",
-     title: "Between Stops",
-     alt: "일본 열차 안에서 창밖을 보는 사람",
-   },
-4. 사진 수를 늘리려면 항목을 복사합니다. 순서는 위에서 아래입니다.
+메일과 인스타그램 설정
+footer.js 위쪽의 footerContact 안에 실제 정보를 입력하세요.
+email: "실제 이메일 주소",
+instagram: "현재 인스타그램 아이디",
+인스타그램은 @ 없이 아이디만 적거나 전체 https 주소를 넣으면 됩니다.
+블로그는 기존 nine_eighteen 주소로 연결했습니다.
+실제 주소가 비어 있으면 Email / Instagram은 문구만 표시됩니다.
+이전 About contact.js에 입력한 주소가 있다면 About에서는 그 값도 불러옵니다.
+전체 페이지에 적용하려면 footer.js에 주소를 입력하세요.
 
-클래식카쇼 사진 17.JPG, 18.JPG, 19.JPG는 현재 공개된 사이트에서 가져왔습니다.
-네 번째 사진과 일본 사진 4장은 아직 빈 자리입니다.
-빈 src에 경로를 적으면 자동으로 사진이 표시됩니다.
-클래식카쇼 네 번째 예: src: "media/classic-04.jpg"
-일본 첫 번째 예: src: "media/japan-01.jpg"
-
-사용 방법
-모바일: 손가락으로 가로로 밀기
-데스크탑: 하단 좌우 화살표 / 트랙패드 가로 스크롤
-키보드: 갤러리에 초점을 둔 다음 좌우 방향키
-사진 클릭: 확대 보기. ESC 또는 바깥 클릭으로 닫기
-
-사진 영역 높이는 같고 사진 비율은 원본 그대로입니다.
-제목 및 소개도 gallery.js에서 수정합니다.
-Safari 캐시 방지를 위해 HTML의 CSS와 갤러리 JS 주소에 버전을 붙였습니다.
-추후 수정 시 ?v=20261126-1의 마지막 숫자를 바꿔주세요.
-
-배포: HtoG 폴더 안의 모든 파일과 media 폴더를 함께 업로드합니다.
+Safari에 이전 viewer.js가 남아 있다면 HTML 안의
+src="viewer.js"를 src="viewer.js?v=20261126-footer"로 바꾸세요.
+이미 ?v=...가 붙어 있다면 버전 값만 바꿉니다.
