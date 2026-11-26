@@ -771,3 +771,32 @@ body.viewer-open {
   height: auto;
   max-height: none;
 }
+
+.photo-track {
+  --slide-width: 82%;
+  --slide-gap: clamp(20px, 3vw, 48px);
+
+  gap: var(--slide-gap);
+}
+
+.slide {
+  flex: 0 0 var(--slide-width);
+  scroll-snap-align: center;
+}
+
+/* 첫 사진과 마지막 사진도 중앙에 올 수 있도록 공간 확보 */
+.photo-track::before,
+.photo-track::after {
+  content: "";
+  flex: 0 0 max(
+    0px,
+    calc((100% - var(--slide-width)) / 2 - var(--slide-gap))
+  );
+}
+
+@media (max-width: 720px) {
+  .photo-track {
+    --slide-width: 88%;
+    --slide-gap: 16px;
+  }
+}

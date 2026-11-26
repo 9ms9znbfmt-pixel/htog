@@ -118,9 +118,13 @@ collections.forEach((collection, collectionIndex) => {
   let activeIndex = 0;
   const slides = [...track.children];
   const update = () => {
-    const origin = track.getBoundingClientRect().left;
+    const trackRect = track.getBoundingClientRect();
+    const origin = trackRect.left + trackRect.width / 2;
     const closest = slides.reduce((best, slide, index) => {
-      const distance = Math.abs(slide.getBoundingClientRect().left - origin);
+      const slideRect = slide.getBoundingClientRect();
+      const distance = Math.abs(
+        slideRect.left + slideRect.width / 2 - origin
+      );
       return distance < best.distance ? { index, distance } : best;
     }, { index: 0, distance: Infinity });
     activeIndex = closest.index;
@@ -131,7 +135,11 @@ collections.forEach((collection, collectionIndex) => {
   const move = (direction) => {
     const target = slides[Math.max(0, Math.min(slides.length - 1, activeIndex + direction))];
     track.scrollBy({
-      left: target.getBoundingClientRect().left - track.getBoundingClientRect().left,
+        left:
+          target.getBoundingClientRect().left +
+          target.getBoundingClientRect().width / 2 -
+          (track.getBoundingClientRect().left +
+            track.getBoundingClientRect().width / 2),
       behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth",
     });
   };
