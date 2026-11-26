@@ -13,8 +13,8 @@
       href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23141616'/%3E%3Cpath d='M9 7v18M23 7v18M9 16h14' stroke='%23eeeae2' stroke-width='3'/%3E%3C/svg%3E"
       type="image/svg+xml"
     />
-    <link rel="stylesheet" href="style.css" />
-    <script src="gallery.js" defer></script>
+    <link rel="stylesheet" href="style.css?v=20261126-1" />
+    <script src="gallery.js?v=20261126-1" defer></script>
     <script src="viewer.js" defer></script>
   </head>
   <body id="top">
@@ -50,21 +50,14 @@
           <span>Photographs by Donghun You</span><span>Selected works</span>
         </div>
       </section>
-      <section id="selected" class="car-collection" aria-labelledby="collection-title">
-        <div class="collection-intro">
-          <p class="eyebrow">Selected photographs / 01</p>
-          <div class="collection-heading">
-            <h2 id="collection-title">Classic Car Show<span>.</span></h2>
-            <p lang="ko">오래된 차를 바라보는 시선.</p>
-          </div>
-        </div>
-        <div class="car-sequence" id="car-sequence"></div>
-        <noscript><p class="collection-note" lang="ko">사진을 보려면 JavaScript를 켜주세요.</p></noscript>
-        <div class="collection-end">
-          <span>HtoG / Selected photographs</span>
-          <a class="text-link" href="#top">Back to top ↑</a>
-        </div>
-      </section>
+      <div id="selected" class="collections">
+        <nav class="collection-nav" aria-label="Photo collections">
+          <a href="#classic-cars">01 / Classic Car Show</a>
+          <a href="#japan">02 / Japan, in passing</a>
+        </nav>
+        <div id="collections"></div>
+        <noscript><p lang="ko">사진을 보려면 JavaScript를 켜주세요.</p></noscript>
+      </div>
     </main>
     <footer class="footer">
       <a href="index.html" class="footer-mark">HtoG</a>
