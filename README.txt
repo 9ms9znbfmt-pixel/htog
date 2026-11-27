@@ -1,21 +1,24 @@
-HtoG 공통 푸터 업데이트
+HtoG — 홈 미리보기 + 시리즈 상세 페이지
 
-압축 안의 viewer.js, footer.js, footer.css를 사이트의 index.html과 같은 폴더에 넣으세요.
-viewer.js는 기존 파일을 교체하고 나머지 두 파일은 추가합니다.
-모든 페이지에서 사용하던 viewer.js가 공통 푸터를 자동으로 불러옵니다.
-기존 HTML, style.css, gallery.js, 사진 파일을 바꿀 필요가 없습니다.
-About에 있던 별도 연락처 영역은 자동으로 제거됩니다.
+다음 6개 파일을 기존 index.html과 같은 폴더에 올리세요.
+index.html / gallery.js / classic-cars.html / japan.html / series.js / series.css
+index.html과 gallery.js는 교체하고 나머지는 추가합니다.
+기존 style.css, viewer.js, footer 관련 파일, 사진 파일은 그대로 사용합니다.
 
-메일과 인스타그램 설정
-footer.js 위쪽의 footerContact 안에 실제 정보를 입력하세요.
-email: "실제 이메일 주소",
-instagram: "현재 인스타그램 아이디",
-인스타그램은 @ 없이 아이디만 적거나 전체 https 주소를 넣으면 됩니다.
-블로그는 기존 nine_eighteen 주소로 연결했습니다.
-실제 주소가 비어 있으면 Email / Instagram은 문구만 표시됩니다.
-이전 About contact.js에 입력한 주소가 있다면 About에서는 그 값도 불러옵니다.
-전체 페이지에 적용하려면 footer.js에 주소를 입력하세요.
+현재 공개 사이트의 설정을 기준으로 클래식카쇼 17~20.JPG,
+일본 21~24.JPG 경로와 사진 제목을 유지했습니다.
+사진 파일은 이 업데이트 ZIP에 포함하지 않았습니다.
 
-Safari에 이전 viewer.js가 남아 있다면 HTML 안의
-src="viewer.js"를 src="viewer.js?v=20261126-footer"로 바꾸세요.
-이미 ?v=...가 붙어 있다면 버전 값만 바꿉니다.
+gallery.js 맨 위의 collections에서 사진, 제목, 소개문을 관리합니다.
+시리즈 소개: description
+개별 사진: photos 안의 src, title, alt
+사진을 더 넣으려면 photos 배열에 항목을 추가하세요.
+홈에는 앞의 4장만, 상세 페이지에는 등록된 전체 사진이 표시됩니다.
+빈 src 항목은 표시하지 않습니다.
+
+홈의 '전체 작업 보기'에서 시리즈 페이지로 이동합니다.
+상세 페이지는 사진을 세로로 배치하며 원래 비율을 유지합니다.
+하단에는 홈으로 돌아가기와 다른 시리즈 링크가 있습니다.
+
+이번 변경은 홈 미리보기/상세 페이지와 짧은 소개문에 한정됩니다.
+CSS 및 gallery.js 버전은 20261128-1입니다.

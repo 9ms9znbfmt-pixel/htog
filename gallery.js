@@ -4,30 +4,70 @@ const collections = [
   {
     id: "classic-cars",
     title: "Classic Car Show",
-    description: "오래된 차를 바라보는 시선.",
+    description: "오래된 차의 선과 색, 그 표면에 머무는 빛을 바라봅니다.\n시간이 지나도 눈길을 붙잡는 장면들을 모았습니다.",
+    page: "classic-cars.html",
     photos: [
-      { src: "media/17.JPG", title: "Classic Car Show / 01", alt: "클래식카쇼에서 촬영한 사진 1" },
-      { src: "media/18.JPG", title: "Classic Car Show / 02", alt: "클래식카쇼에서 촬영한 사진 2" },
-      { src: "media/19.JPG", title: "Classic Car Show / 03", alt: "클래식카쇼에서 촬영한 사진 3" },
-      { src: "media/20.JPG", title: "Classic Car Show / 04", alt: "" },
+      { src: "media/CCS/CCS-1.JPG", title: "Classic Car Show / 01", alt: "" },
+      { src: "media/CCS/CCS-2.JPG", title: "Classic Car Show / 02", alt: "" },
+      { src: "media/CCS/CCS-3.JPG", title: "Classic Car Show / 03", alt: "" },
+      { src: "media/CCS/CCS-4.JPG", title: "Classic Car Show / 04", alt: "" },
+      { src: "media/CCS/CCS-5.JPG", title: "Classic Car Show / 05", alt: "" },
+      { src: "media/CCS/CCS-6.JPG", title: "Classic Car Show / 06", alt: "" },
+      { src: "media/CCS/CCS-7.JPG", title: "Classic Car Show / 07", alt: "" },
+      { src: "media/CCS/CCS-8.JPG", title: "Classic Car Show / 08", alt: "" },
+      { src: "media/CCS/CCS-9.JPG", title: "Classic Car Show / 09", alt: "" },
+      { src: "media/CCS/CCS-10.JPG", title: "Classic Car Show / 10", alt: "" },
+      { src: "media/CCS/CCS-11.JPG", title: "Classic Car Show / 11", alt: "" },
+      { src: "media/CCS/CCS-12.JPG", title: "Classic Car Show / 12", alt: "" },
+      { src: "media/CCS/CCS-13.JPG", title: "Classic Car Show / 13", alt: "" },
+      { src: "media/CCS/CCS-14.JPG", title: "Classic Car Show / 14", alt: "" },
+      { src: "media/CCS/CCS-15.JPG", title: "Classic Car Show / 15", alt: "" },
     ],
   },
   {
     id: "japan",
     title: "Japan, in passing",
-    description: "일본에서, 걸으며 마주한 장면들.",
+    description: "낯선 거리를 걸으며 빛과 사람 사이에 잠시 머물렀습니다.\n스쳐 간 장면들 가운데 오래 남은 순간들을 모았습니다.",
+    page: "japan.html",
     photos: [
-      { src: "media/21.JPG", title: "Japan / 01", alt: "" },
-      { src: "media/22.JPG", title: "Japan / 02", alt: "" },
-      { src: "media/23.JPG", title: "Japan / 03", alt: "" },
-      { src: "media/24.JPG", title: "Japan / 04", alt: "" },
+      { src: "media/ZIP/ZIP-1.JPG", title: "Japan / 01", alt: "" },
+      { src: "media/ZIP/ZIP-2.JPG", title: "Japan / 02", alt: "" },
+      { src: "media/ZIP/ZIP-3.JPG", title: "Japan / 03", alt: "" },
+      { src: "media/ZIP/ZIP-4.JPG", title: "Japan / 04", alt: "" },
+      { src: "media/ZIP/ZIP-5.JPG", title: "Japan / 05", alt: "" },
+      { src: "media/ZIP/ZIP-6.JPG", title: "Japan / 06", alt: "" },
+      { src: "media/ZIP/ZIP-7.JPG", title: "Japan / 07", alt: "" },
+      { src: "media/ZIP/ZIP-8.JPG", title: "Japan / 08", alt: "" },
+      { src: "media/ZIP/ZIP-9.JPG", title: "Japan / 09", alt: "" },
+      { src: "media/ZIP/ZIP-10.JPG", title: "Japan / 10", alt: "" },
+      { src: "media/ZIP/ZIP-11.JPG", title: "Japan / 11", alt: "" },
+      { src: "media/ZIP/ZIP-12.JPG", title: "Japan / 12", alt: "" },
+      { src: "media/ZIP/ZIP-13.JPG", title: "Japan / 13", alt: "" },
+      { src: "media/ZIP/ZIP-14.JPG", title: "Japan / 14", alt: "" },
+      { src: "media/ZIP/ZIP-15.JPG", title: "Japan / 15", alt: "" },
+      { src: "media/ZIP/ZIP-16.JPG", title: "Japan / 16", alt: "" },
+      { src: "media/ZIP/ZIP-17.JPG", title: "Japan / 17", alt: "" },
+      { src: "media/ZIP/ZIP-18.JPG", title: "Japan / 18", alt: "" },
+      { src: "media/ZIP/ZIP-19.JPG", title: "Japan / 19", alt: "" },
+      { src: "media/ZIP/ZIP-20.JPG", title: "Japan / 20", alt: "" },
+      { src: "media/ZIP/ZIP-21.JPG", title: "Japan / 21", alt: "" },
+      { src: "media/ZIP/ZIP-22.JPG", title: "Japan / 22", alt: "" },
+      { src: "media/ZIP/ZIP-23.JPG", title: "Japan / 23", alt: "" },
     ],
   },
 ];
 
+if (!document.querySelector('link[data-series-style]')) {
+  const stylesheet = document.createElement("link");
+  stylesheet.rel = "stylesheet";
+  stylesheet.href = "series.css?v=20261128-1";
+  stylesheet.dataset.seriesStyle = "";
+  document.head.append(stylesheet);
+}
+
 const container = document.getElementById("collections");
 
-collections.forEach((collection, collectionIndex) => {
+if (container) collections.forEach((collection, collectionIndex) => {
   const section = document.createElement("section");
   section.className = "photo-collection";
   section.id = collection.id;
@@ -54,7 +94,7 @@ collections.forEach((collection, collectionIndex) => {
   track.setAttribute("role", "region");
   track.setAttribute("aria-label", `${collection.title} photographs`);
 
-  collection.photos.forEach((photo, index) => {
+  collection.photos.filter((photo) => photo.src.trim()).slice(0, 4).forEach((photo, index) => {
     const figure = document.createElement("figure");
     figure.className = "slide";
     const stage = document.createElement("div");
@@ -111,7 +151,12 @@ collections.forEach((collection, collectionIndex) => {
     button.setAttribute("aria-controls", track.id);
     buttons.append(button);
   }
-  controls.append(status, buttons);
+  const fullSeries = document.createElement("a");
+  fullSeries.className = "text-link full-series-link";
+  fullSeries.href = collection.page;
+  fullSeries.textContent = "전체 작업 보기 ↗";
+  fullSeries.lang = "ko";
+  controls.append(status, fullSeries, buttons);
   section.append(head, track, controls);
   container.append(section);
 

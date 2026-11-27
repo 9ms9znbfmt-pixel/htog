@@ -1,0 +1,34 @@
+.collection-description {
+  max-width: 54ch;
+  line-height: 1.95;
+  text-wrap: pretty;
+}
+.collection-controls { column-gap: 24px; }
+.full-series-link { margin-left: auto; margin-right: 22px; color: var(--text); white-space: nowrap; }
+.series-detail { max-width: 1480px; padding: 60px var(--pad) 100px; margin: auto; }
+.series-introduction { margin-bottom: clamp(60px, 9vw, 125px); }
+.series-back { margin-bottom: 60px; color: var(--muted); }
+.series-introduction .eyebrow { margin-bottom: 23px; }
+.series-introduction h1 { font: clamp(45px, 6.8vw, 94px)/1.12 Georgia, serif; letter-spacing: -0.045em; }
+.series-description { max-width: 52ch; margin-top: 30px; color: var(--muted); line-height: 2; font-size: 16px; }
+.series-photographs { display: grid; row-gap: clamp(65px, 10vw, 145px); }
+.series-photographs figure { min-width: 0; width: 100%; max-width: 1120px; margin-inline: auto; }
+.series-photographs figure.is-portrait { max-width: 700px; width: 72%; }
+.series-photographs .picture { display: flex; justify-content: center; }
+.series-photographs img { width: auto; height: auto; max-width: 100%; max-height: 85vh; max-height: 85svh; object-fit: contain; }
+.series-photographs figcaption { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line); font-size: 12px; color: var(--muted); }
+.series-navigation { margin-top: 110px; border-top: 1px solid var(--line); padding-top: 30px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 25px; }
+@media (max-width: 720px) {
+  .collection-controls { flex-wrap: wrap; gap: 20px; }
+  .full-series-link { margin-right: 0; font-size: 12px; }
+  .series-detail { padding-top: 35px; padding-bottom: 70px; }
+  .series-back { margin-bottom: 42px; }
+  .series-introduction h1 { font-size: clamp(39px, 11vw, 64px); }
+  .series-description { font-size: 15px; margin-top: 24px; }
+  .series-photographs figure.is-portrait { width: 100%; }
+  .series-navigation { margin-top: 75px; }
+}
+.collection-description,
+.series-description {
+  white-space: pre-line;
+}
