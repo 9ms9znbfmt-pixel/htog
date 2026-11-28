@@ -26,7 +26,7 @@ const collections = [
   },
   {
     id: "japan",
-    title: "Japan, in passing",
+    title: "Japan, In Passing",
     description: "낯선 거리를 걸으며 빛과 사람 사이에 잠시 머물렀습니다.\n스쳐 간 장면들 가운데 오래 남은 순간들을 모았습니다.",
     page: "japan.html",
     photos: [
